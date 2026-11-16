@@ -1,0 +1,492 @@
+import {
+  ChefHat,
+  Coffee,
+  Flame,
+  Moon,
+  Plus,
+  RotateCcw,
+  Sun,
+  Sunset,
+  Trash2
+} from 'lucide-react';
+import { motion } from 'motion/react';
+import { useMemo, useRef, useState } from 'react';
+import {
+  formatSpanishDateHeader,
+  getWeekStripDays,
+  toDateKey
+} from '../domain/dateUtils';
+import { evaluateDayAdherence, sumDailyMacros } from '../domain/nutritionCalculator';
+import { MEAL_SLOT_META, MealLogEntry, MealSlot } from '../domain/types';
+import { useNutritionStore } from '../store/useNutritionStore';
+import { BottomSheet } from './BottomSheet';
+import { CalorieRing } from './CalorieRing';
+import { QuickAddSheet } from './QuickAddSheet';
+import { UndoToast } from './UndoToast';
+
+interface TodayViewProps {
+  onOpenDishBuilder: () => void;
+}
+
+const SLOT_ICONS: Record<MealSlot, typeof Coffee> = {
+  breakfast: Coffee,
+  lunch: Sun,
+  snack: Sunset,
+  dinner: Moon
+};
+
+export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
+  const selectedDate = useNutritionStore((s) => s.selectedDate);
+  const setSelectedDate = useNutritionStore((s) => s.setSelectedDate);
+  const goals = useNutritionStore((s) => s.goals);
+  const logs = useNutritionStore((s) => s.logs);
+  const removeLogEntry = useNutritionStore((s) => s.removeLogEntry);
+  const restoreLogEntry = useNutritionStore((s) => s.restoreLogEntry);
+  const updateLogEntryAmount = useNutritionStore((s) => s.updateLogEntryAmount);
+
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddSlot, setQuickAddSlot] = useState<MealSlot>('lunch');
+  const [editingEntry, setEditingEntry] = useState<MealLogEntry | null>(null);
+  const [editValue, setEditValue] = useState<number>(100);
+
+  // Undo state for deleted log entries
+  const [deletedUndo, setDeletedUndo] = useState<{
+    dateKey: string;
+    entry: MealLogEntry;
+  } | null>(null);
+  const undoTimerRef = useRef<number | null>(null);
+
+  const todayKey = toDateKey();
+  const dateHeader = formatSpanishDateHeader(selectedDate, todayKey);
+  const weekDays = useMemo(() => getWeekStripDays(selectedDate, todayKey), [selectedDate, todayKey]);
+
+  const dayLog = logs[selectedDate];
+  const consumed = useMemo(() => sumDailyMacros(dayLog), [dayLog]);
+
+  // Calculate active logging streak ending today or yesterday
+  const streakCount = useMemo(() => {
+    let count = 0;
+    const d = new Date();
+    if (!logs[todayKey]?.entries.length) {
+      d.setDate(d.getDate() - 1);
+    }
+    for (let i = 0; i < 60; i++) {
+      const k = toDateKey(d);
+      const summary = evaluateDayAdherence(k, logs[k], goals);
+      if (summary.entryCount > 0 && summary.deviationRatio <= 0.28) {
+        count++;
+        d.setDate(d.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return count;
+  }, [logs, goals, todayKey]);
+
+  const entriesBySlot = useMemo(() => {
+    const grouped: Record<MealSlot, MealLogEntry[]> = {
+      breakfast: [],
+      lunch: [],
+      snack: [],
+      dinner: []
+    };
+    for (const entry of dayLog?.entries ?? []) {
+      grouped[entry.mealSlot].push(entry);
+    }
+    return grouped;
+  }, [dayLog]);
+
+  const openQuickAddForSlot = (slot: MealSlot) => {
+    setQuickAddSlot(slot);
+    setQuickAddOpen(true);
+  };
+
+  const openEditEntry = (entry: MealLogEntry) => {
+    setEditingEntry(entry);
+    setEditValue(entry.sourceType === 'dish' ? entry.servings ?? 1 : entry.grams);
+  };
+
+  const handleSaveEntryEdit = () => {
+    if (!editingEntry) return;
+    updateLogEntryAmount(selectedDate, editingEntry.id, editValue);
+    setEditingEntry(null);
+  };
+
+  const handleRemoveEntry = (entry: MealLogEntry) => {
+    removeLogEntry(selectedDate, entry.id);
+    if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
+    setDeletedUndo({ dateKey: selectedDate, entry });
+    undoTimerRef.current = window.setTimeout(() => {
+      setDeletedUndo(null);
+    }, 4500);
+  };
+
+  const handleUndoRemove = () => {
+    if (!deletedUndo) return;
+    restoreLogEntry(deletedUndo.dateKey, deletedUndo.entry);
+    setDeletedUndo(null);
+    if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
+  };
+
+  const macroCards = [
+    {
+      label: 'Proteína',
+      consumed: consumed.protein,
+      goal: goals.proteinGrams,
+      barColor: '#2A6F68'
+    },
+    {
+      label: 'Carbos',
+      consumed: consumed.carbs,
+      goal: goals.carbsGrams,
+      barColor: '#D46A43'
+    },
+    {
+      label: 'Grasas',
+      consumed: consumed.fat,
+      goal: goals.fatGrams,
+      barColor: '#013230'
+    }
+  ];
+
+  return (
+    <div className="pb-32">
+      {/* Translucent Top Header */}
+      <header className="liquid-glass-header sticky top-0 z-30 pt-[env(safe-area-inset-top,0px)]">
+        <div className="mx-auto flex max-w-lg items-center justify-between px-5 pt-3.5 pb-2.5">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="heading-tight text-[26px] font-bold text-[#101918]">
+                {dateHeader.primary}
+              </h1>
+              {!dateHeader.isToday && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(todayKey)}
+                  className="pressable-sm inline-flex min-h-[34px] items-center gap-1 rounded-full bg-[#E8DEC8] px-3 py-1 text-[12px] font-semibold text-[#013230]"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  Ir a hoy
+                </button>
+              )}
+            </div>
+            <p className="text-[13px] font-medium text-[#41514F]">
+              {dateHeader.secondary}
+            </p>
+          </div>
+
+          <div
+            className="flex items-center gap-1.5 rounded-full border border-[#D46A43]/25 bg-[#F5E1D8] px-3 py-1.5"
+            title="Días consecutivos cerca de tu objetivo"
+          >
+            <Flame className="h-4 w-4 text-[#B54E28]" strokeWidth={2.3} />
+            <span className="tabular-nums text-[13px] font-bold text-[#8B3B1E]">
+              {streakCount} {streakCount === 1 ? 'día' : 'días'}
+            </span>
+          </div>
+        </div>
+
+        {/* 7-day interactive calendar strip */}
+        <div className="mx-auto grid max-w-lg grid-cols-7 gap-1 px-4 pb-3">
+          {weekDays.map((day) => {
+            const isSelected = day.dateKey === selectedDate;
+            const summary = evaluateDayAdherence(day.dateKey, logs[day.dateKey], goals);
+            const hasLog = summary.entryCount > 0;
+            return (
+              <button
+                key={day.dateKey}
+                type="button"
+                disabled={day.isFuture}
+                onClick={() => setSelectedDate(day.dateKey)}
+                aria-label={`${day.dayNameShort} ${day.dayNumber}`}
+                aria-pressed={isSelected}
+                className={`pressable-sm relative flex min-h-[54px] flex-col items-center justify-center rounded-2xl py-2 transition-colors ${
+                  isSelected
+                    ? 'bg-[#013230] text-[#F3EBDD] shadow-sm'
+                    : day.isFuture
+                      ? 'cursor-default opacity-35 text-[#53625F]'
+                      : 'text-[#41514F] hover:bg-[#E8DEC8]/50'
+                }`}
+              >
+                <span className="text-[11px] font-semibold uppercase tracking-wide opacity-85">
+                  {day.dayNameShort}
+                </span>
+                <span className="tabular-nums mt-0.5 text-[14px] font-bold">
+                  {day.dayNumber}
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={`mt-1 h-1.5 w-1.5 rounded-full ${
+                    !hasLog
+                      ? 'bg-transparent'
+                      : isSelected
+                        ? 'bg-[#F3EBDD]'
+                        : summary.level === 'optimal'
+                          ? 'bg-[#013230]'
+                          : summary.level === 'far_over'
+                            ? 'bg-[#D46A43]'
+                            : 'bg-[#2A6F68]'
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-lg space-y-5 px-4 pt-4">
+        {/* Hero Calorie & Macros Summary Card */}
+        <section
+          aria-label="Resumen calórico del día"
+          className="surface-card rounded-[28px] p-5"
+        >
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:justify-between">
+            <CalorieRing consumed={consumed.calories} goal={goals.calories} />
+
+            <div className="w-full flex-1 space-y-3">
+              {/* Consumed vs Goal numbers */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="rounded-2xl bg-[#F3EBDD]/85 px-3.5 py-2.5">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-[#41514F]">
+                    Consumido
+                  </div>
+                  <div className="tabular-nums mt-0.5 text-[20px] font-bold text-[#101918]">
+                    {consumed.calories}{' '}
+                    <span className="text-[12px] font-medium text-[#53625F]">kcal</span>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-[#F3EBDD]/85 px-3.5 py-2.5">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-[#41514F]">
+                    Objetivo
+                  </div>
+                  <div className="tabular-nums mt-0.5 text-[20px] font-bold text-[#013230]">
+                    {goals.calories}{' '}
+                    <span className="text-[12px] font-medium text-[#53625F]">kcal</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Macro Distribution Strip */}
+              <div className="space-y-2.5 pt-1">
+                {macroCards.map((macro) => {
+                  const pct = Math.min(
+                    100,
+                    Math.round((macro.consumed / Math.max(1, macro.goal)) * 100)
+                  );
+                  return (
+                    <div key={macro.label}>
+                      <div className="mb-1 flex items-baseline justify-between text-[13px]">
+                        <span className="font-semibold text-[#101918]">{macro.label}</span>
+                        <span className="tabular-nums font-medium text-[#41514F]">
+                          <strong className="text-[#101918]">{Math.round(macro.consumed)}</strong> /{' '}
+                          {macro.goal} g
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-[#E8DEC8]">
+                        <motion.div
+                          initial={false}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ type: 'spring', bounce: 0, duration: 0.55 }}
+                          className="h-full rounded-full"
+                          style={{ backgroundColor: macro.barColor }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Singular Prominent Primary Action Button in Deep Teal */}
+          <button
+            type="button"
+            onClick={() => openQuickAddForSlot('snack')}
+            className="pressable btn-primary-teal mt-5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#013230] px-5 text-[15px] font-semibold text-[#F3EBDD] shadow-[0_6px_18px_rgba(1,50,48,0.18)]"
+          >
+            <Plus className="h-5 w-5" strokeWidth={2.4} />
+            Registrar alimento o plato
+          </button>
+        </section>
+
+        {/* Meals Breakdown */}
+        <section aria-label="Comidas registradas" className="space-y-3.5">
+          {(Object.keys(MEAL_SLOT_META) as MealSlot[]).map((slot) => {
+            const meta = MEAL_SLOT_META[slot];
+            const items = entriesBySlot[slot];
+            const slotCalories = items.reduce((acc, i) => acc + i.macros.calories, 0);
+            const SlotIcon = SLOT_ICONS[slot];
+
+            return (
+              <div key={slot} className="surface-card overflow-hidden rounded-[24px]">
+                {/* Meal Slot Header */}
+                <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E8DEC8]/75 text-[#013230]">
+                      <SlotIcon className="h-5 w-5" strokeWidth={2} />
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-[16px] font-bold text-[#101918]">{meta.label}</h2>
+                      <p className="tabular-nums text-[12px] font-medium text-[#41514F]">
+                        {items.length > 0
+                          ? `${slotCalories} kcal · ${items.length} ${items.length === 1 ? 'ítem' : 'ítems'}`
+                          : meta.defaultTimeHint}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Secondary Tinted Pill (reserves solid Deep Teal for hero primary action) */}
+                  <button
+                    type="button"
+                    onClick={() => openQuickAddForSlot(slot)}
+                    aria-label={`Añadir a ${meta.label}`}
+                    className="pressable-sm flex min-h-[44px] items-center gap-1 rounded-full bg-[#D7E6E3]/85 px-3.5 text-[13px] font-bold text-[#013230]"
+                  >
+                    <Plus className="h-4 w-4" strokeWidth={2.4} />
+                    Añadir
+                  </button>
+                </div>
+
+                {/* Logged Entries */}
+                {items.length > 0 && (
+                  <div className="divide-y divide-[#013230]/8 border-t border-[#013230]/8 bg-[#FFFDF9]/75">
+                    {items.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center justify-between gap-2 py-2.5 pr-2 pl-4"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => openEditEntry(entry)}
+                          className="min-h-[44px] min-w-0 flex-1 py-1 text-left"
+                        >
+                          <div className="flex items-center gap-1.5">
+                            {entry.sourceType === 'dish' && (
+                              <span className="inline-flex shrink-0 items-center gap-0.5 rounded-md bg-[#D7E6E3] px-1.5 py-0.5 text-[11px] font-bold text-[#013230]">
+                                <ChefHat className="h-3 w-3" />
+                                Plato
+                              </span>
+                            )}
+                            <span className="truncate text-[14px] font-semibold text-[#101918]">
+                              {entry.name}
+                            </span>
+                          </div>
+                          <div className="tabular-nums mt-0.5 text-[12px] text-[#41514F]">
+                            {entry.sourceType === 'dish' && entry.servings
+                              ? `${entry.servings} ${entry.servings === 1 ? 'porción' : 'porciones'} (${entry.grams}g)`
+                              : `${entry.grams}g`}{' '}
+                            · P {entry.macros.protein}g · C {entry.macros.carbs}g · G{' '}
+                            {entry.macros.fat}g
+                          </div>
+                        </button>
+
+                        <div className="flex shrink-0 items-center gap-1">
+                          <span className="tabular-nums text-[14px] font-bold text-[#013230]">
+                            {entry.macros.calories}{' '}
+                            <span className="text-[11px] font-medium text-[#53625F]">kcal</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveEntry(entry)}
+                            aria-label={`Eliminar ${entry.name}`}
+                            className="pressable-sm flex h-11 w-11 items-center justify-center rounded-full text-[#53625F] hover:bg-[#F5E1D8] hover:text-[#B54E28]"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </section>
+      </main>
+
+      <UndoToast
+        message={deletedUndo ? `Eliminado: ${deletedUndo.entry.name}` : null}
+        onUndo={handleUndoRemove}
+        onDismiss={() => setDeletedUndo(null)}
+      />
+
+      {/* Quick Add Bottom Sheet */}
+      {quickAddOpen && (
+        <QuickAddSheet
+          open={quickAddOpen}
+          onClose={() => setQuickAddOpen(false)}
+          dateKey={selectedDate}
+          initialMealSlot={quickAddSlot}
+          onOpenDishBuilder={onOpenDishBuilder}
+        />
+      )}
+
+      {/* Inline Entry Quantity Editor Sheet */}
+      <BottomSheet
+        open={Boolean(editingEntry)}
+        onClose={() => setEditingEntry(null)}
+        title={editingEntry?.name ?? ''}
+        subtitle={
+          editingEntry?.sourceType === 'dish'
+            ? 'Ajustar porciones registradas'
+            : 'Ajustar cantidad en gramos'
+        }
+        footer={
+          <button
+            type="button"
+            onClick={handleSaveEntryEdit}
+            className="pressable btn-primary-teal flex min-h-[50px] w-full items-center justify-center rounded-full bg-[#013230] text-[15px] font-semibold text-[#F3EBDD]"
+          >
+            Guardar cambios
+          </button>
+        }
+      >
+        {editingEntry && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setEditValue((v) =>
+                    editingEntry.sourceType === 'dish'
+                      ? Math.max(0.5, v - 0.5)
+                      : Math.max(5, v - 15)
+                  )
+                }
+                aria-label="Reducir cantidad"
+                className="pressable-sm flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E8DEC8] text-[20px] font-bold text-[#101918]"
+              >
+                −
+              </button>
+              <div className="relative flex-1">
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  step={editingEntry.sourceType === 'dish' ? 0.25 : 1}
+                  value={editValue}
+                  onChange={(e) => setEditValue(Math.max(0.25, Number(e.target.value) || 0))}
+                  className="tabular-nums h-12 w-full rounded-2xl border border-[#013230]/15 bg-[#FFFDF9] px-4 text-center text-[20px] font-bold text-[#101918] focus:border-[#013230] focus:outline-none"
+                />
+                <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[13px] font-medium text-[#53625F]">
+                  {editingEntry.sourceType === 'dish' ? 'porc.' : 'g'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setEditValue((v) =>
+                    editingEntry.sourceType === 'dish' ? v + 0.5 : v + 15
+                  )
+                }
+                aria-label="Aumentar cantidad"
+                className="pressable-sm flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E8DEC8] text-[20px] font-bold text-[#101918]"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
+      </BottomSheet>
+    </div>
+  );
+}

@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+:root {
+  /* Core Palette Tokens */
+  --bg-cream: #F3EBDD;
+  --surface-card: #FAF6EE;
+  --surface-elevated: #FFFDF9;
+  --surface-muted: #E8DEC8;
+  --surface-muted-hover: #DFD2B8;
+
+  /* Brand & Action Accents */
+  --accent-teal: #013230;
+  --accent-teal-hover: #024542;
+  --accent-teal-soft: rgba(1, 50, 48, 0.08);
+
+  /* Auxiliary Green (Sage / Eucalyptus) */
+  --aux-sage: #2A6F68;
+  --aux-sage-text: #1F5B55;
+  --aux-sage-tint: #D7E6E3;
+  --aux-sage-border: rgba(42, 111, 104, 0.22);
+
+  /* Auxiliary Orange (Muted Terracotta - Non-garish) */
+  --aux-terracotta: #D46A43;
+  --aux-terracotta-tint: #F5E1D8;
+  --aux-terracotta-border: rgba(212, 106, 67, 0.25);
+
+  /* Ink Typography & Borders */
+  --ink-primary: #101918;
+  --ink-secondary: #41514F;
+  --ink-muted: #53625F;
+  --border-hairline: rgba(1, 50, 48, 0.09);
+  --border-strong: rgba(1, 50, 48, 0.16);
+
+  /* Easing & Springs */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+  color: var(--ink-primary);
+  background-color: var(--bg-cream);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Emil Kowalski Mobile-Native Baseline Rules
+   ========================================================================== */
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+  background-color: var(--bg-cream);
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-cream);
+  color: var(--ink-primary);
+  overscroll-behavior: none;
+  min-height: 100dvh;
+}
+
+/* Never zoom on iOS input focus: minimum 16px */
+input,
+textarea,
+select {
+  font-size: 16px;
+  font-family: inherit;
+}
+
+/* Kill 300ms tap delay & prevent accidental text selection on controls */
+button,
+a,
+[role="button"],
+.tappable {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Instant tactile press feedback on pointer-down (:active) */
+.pressable {
+  transition: transform 110ms var(--ease-out-expo), background-color 120ms ease, opacity 120ms ease;
+}
+
+.pressable:active {
+  transform: scale(0.97);
+}
+
+.pressable-sm {
+  transition: transform 100ms var(--ease-out-expo), background-color 120ms ease;
+}
+
+.pressable-sm:active {
+  transform: scale(0.95);
+}
+
+/* Gate hover effects strictly to fine pointers (mouse/trackpad) */
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift:hover {
+    transform: translateY(-1px);
+  }
+  .btn-primary-teal:hover {
+    background-color: var(--accent-teal-hover);
+  }
+  .card-interactive:hover {
+    border-color: var(--border-strong);
+    background-color: var(--surface-elevated);
+  }
+}
+
+/* ==========================================================================
+   Apple Typography & Tabular Numbers
+   ========================================================================== */
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.display-number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-optical-sizing: auto;
+}
+
+.heading-tight {
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+}
+
+/* ==========================================================================
+   Apple Liquid Glass — Functional Layer Only (Tab Bar, Sheets, Floating Chrome)
+   ========================================================================== */
+
+.liquid-glass-pill {
+  background: rgba(250, 246, 238, 0.78);
+  backdrop-filter: blur(24px) saturate(165%);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 12px 34px -6px rgba(1, 50, 48, 0.14),
+    0 2px 8px -1px rgba(1, 50, 48, 0.07),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.75);
+}
+
+.liquid-glass-header {
+  background: rgba(243, 235, 221, 0.76);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid rgba(1, 50, 48, 0.06);
+}
+
+.scroll-edge-mask-bottom {
+  background: linear-gradient(
+    to top,
+    rgba(243, 235, 221, 0.94) 0%,
+    rgba(243, 235, 221, 0.65) 45%,
+    rgba(243, 235, 221, 0) 100%
+  );
+}
+
+/* Content Layer Cards — Opaque, warm, tactile, zero blur */
+.surface-card {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 2px 10px -3px rgba(1, 50, 48, 0.04);
+}
+
+.sheet-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbars on horizontal chip strips while keeping scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ==========================================================================
+   Accessibility Media Queries (Reduced Motion, Transparency, Contrast)
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    scroll-behavior: auto !important;
+  }
+  .pressable:active,
+  .pressable-sm:active {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-glass-pill {
+    background: #FAF6EE !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(1, 50, 48, 0.2) !important;
+  }
+  .liquid-glass-header {
+    background: #F3EBDD !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border-hairline: rgba(1, 50, 48, 0.32);
+    --ink-secondary: #22302E;
+    --ink-muted: #3A4B48;
+  }
+}
