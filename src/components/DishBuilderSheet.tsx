@@ -149,20 +149,20 @@ export function DishBuilderSheet({
                 {liveNutrition.perServingMacros.calories}
               </div>
             </div>
-            <div className="rounded-xl bg-[#2A6F68]/55 px-2 py-2">
+            <div className="rounded-xl bg-[var(--color-macro-protein)]/35 px-2 py-2">
               <div className="text-[11px] opacity-90">Proteína</div>
               <div className="tabular-nums text-[18px] font-bold">
                 {liveNutrition.perServingMacros.protein}g
               </div>
             </div>
-            <div className="rounded-xl bg-[#D46A43]/40 px-2 py-2">
+            <div className="rounded-xl bg-[var(--color-macro-carbs)]/30 px-2 py-2">
               <div className="text-[11px] opacity-90">Carbos</div>
               <div className="tabular-nums text-[18px] font-bold">
                 {liveNutrition.perServingMacros.carbs}g
               </div>
             </div>
-            <div className="rounded-xl bg-[#FAF6EE]/12 px-2 py-2">
-              <div className="text-[11px] opacity-80">Grasas</div>
+            <div className="rounded-xl bg-[var(--color-macro-fats)]/40 px-2 py-2">
+              <div className="text-[11px] opacity-90">Grasas</div>
               <div className="tabular-nums text-[18px] font-bold">
                 {liveNutrition.perServingMacros.fat}g
               </div>

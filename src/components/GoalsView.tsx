@@ -184,22 +184,28 @@ export function GoalsView() {
           {/* Stacked Macro Ratio Bar */}
           <div className="mt-5">
             <div className="mb-1.5 flex justify-between text-[12px] font-semibold">
-              <span className="text-[#2A6F68]">Proteína {macroPercentages.pPct}%</span>
-              <span className="text-[#B54E28]">Carbos {macroPercentages.cPct}%</span>
-              <span className="text-[#013230]">Grasas {macroPercentages.fPct}%</span>
+              <span className="text-[var(--color-macro-protein)]">
+                Proteína {macroPercentages.pPct}%
+              </span>
+              <span className="text-[var(--color-macro-carbs)]">
+                Carbos {macroPercentages.cPct}%
+              </span>
+              <span className="text-[var(--color-macro-fats)]">
+                Grasas {macroPercentages.fPct}%
+              </span>
             </div>
             <div className="flex h-3 w-full overflow-hidden rounded-full bg-[#E8DEC8]">
               <div
                 style={{ width: `${macroPercentages.pPct}%` }}
-                className="h-full bg-[#2A6F68] transition-all duration-300"
+                className="h-full bg-[var(--color-macro-protein)] transition-all duration-300"
               />
               <div
                 style={{ width: `${macroPercentages.cPct}%` }}
-                className="h-full bg-[#D46A43] transition-all duration-300"
+                className="h-full bg-[var(--color-macro-carbs)] transition-all duration-300"
               />
               <div
                 style={{ width: `${macroPercentages.fPct}%` }}
-                className="h-full bg-[#013230] transition-all duration-300"
+                className="h-full bg-[var(--color-macro-fats)] transition-all duration-300"
               />
             </div>
           </div>
@@ -258,7 +264,7 @@ export function GoalsView() {
               label: 'Proteínas',
               kcalPerG: 4,
               pct: macroPercentages.pPct,
-              color: '#2A6F68',
+              color: 'var(--color-macro-protein)',
               value: goals.proteinGrams
             },
             {
@@ -266,7 +272,7 @@ export function GoalsView() {
               label: 'Carbohidratos',
               kcalPerG: 4,
               pct: macroPercentages.cPct,
-              color: '#D46A43',
+              color: 'var(--color-macro-carbs)',
               value: goals.carbsGrams
             },
             {
@@ -274,7 +280,7 @@ export function GoalsView() {
               label: 'Grasas',
               kcalPerG: 9,
               pct: macroPercentages.fPct,
-              color: '#013230',
+              color: 'var(--color-macro-fats)',
               value: goals.fatGrams
             }
           ].map((macro) => (

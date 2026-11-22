@@ -15,6 +15,7 @@ export function App() {
   const setActiveTab = useNutritionStore((s) => s.setActiveTab);
   const selectedDate = useNutritionStore((s) => s.selectedDate);
 
+  const [globalQuickAddOpen, setGlobalQuickAddOpen] = useState(false);
   const [globalDishBuilderOpen, setGlobalDishBuilderOpen] = useState(false);
   const [newlyCreatedDishToLog, setNewlyCreatedDishToLog] = useState<CustomDish | null>(null);
 
@@ -34,7 +35,21 @@ export function App() {
             setActiveTab(tab);
             window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
           }}
+          onOpenQuickAdd={() => setGlobalQuickAddOpen(true)}
         />
+
+        {globalQuickAddOpen && (
+          <QuickAddSheet
+            open={globalQuickAddOpen}
+            onClose={() => setGlobalQuickAddOpen(false)}
+            dateKey={selectedDate}
+            initialMealSlot="snack"
+            onOpenDishBuilder={() => {
+              setGlobalQuickAddOpen(false);
+              setGlobalDishBuilderOpen(true);
+            }}
+          />
+        )}
 
         {globalDishBuilderOpen && (
           <DishBuilderSheet

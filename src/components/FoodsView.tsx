@@ -324,20 +324,20 @@ export function FoodsView() {
                         {computed.perServingMacros.calories} kcal
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-[#D7E6E3]/80 px-2 py-2 text-[#013230]">
-                      <div className="text-[11px] font-semibold text-[#1F5B55]">Proteína</div>
+                    <div className="rounded-2xl bg-[var(--color-macro-protein-bg)] px-2 py-2 text-[var(--color-macro-protein)]">
+                      <div className="text-[11px] font-semibold">Proteína</div>
                       <div className="tabular-nums text-[15px] font-bold">
                         {computed.perServingMacros.protein}g
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-[#F5E1D8]/85 px-2 py-2 text-[#8B3B1E]">
-                      <div className="text-[11px] font-semibold text-[#8B3B1E]">Carbos</div>
+                    <div className="rounded-2xl bg-[var(--color-macro-carbs-bg)] px-2 py-2 text-[var(--color-macro-carbs)]">
+                      <div className="text-[11px] font-semibold">Carbos</div>
                       <div className="tabular-nums text-[15px] font-bold">
                         {computed.perServingMacros.carbs}g
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-[#E8DEC8]/80 px-2 py-2 text-[#101918]">
-                      <div className="text-[11px] font-semibold text-[#41514F]">Grasas</div>
+                    <div className="rounded-2xl bg-[var(--color-macro-fats-bg)] px-2 py-2 text-[var(--color-macro-fats)]">
+                      <div className="text-[11px] font-semibold">Grasas</div>
                       <div className="tabular-nums text-[15px] font-bold">
                         {computed.perServingMacros.fat}g
                       </div>

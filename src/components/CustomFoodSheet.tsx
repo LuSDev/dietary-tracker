@@ -110,7 +110,7 @@ export function CustomFoodSheet({ open, onClose, onCreated }: CustomFoodSheetPro
             />
           </div>
           <div>
-            <label className="mb-1 block text-[12px] font-semibold text-[#2A6F68]">
+            <label className="mb-1 block text-[12px] font-semibold text-[var(--color-macro-protein)]">
               Proteína g (por 100g)
             </label>
             <input
@@ -122,7 +122,7 @@ export function CustomFoodSheet({ open, onClose, onCreated }: CustomFoodSheetPro
             />
           </div>
           <div>
-            <label className="mb-1 block text-[12px] font-semibold text-[#B54E28]">
+            <label className="mb-1 block text-[12px] font-semibold text-[var(--color-macro-carbs)]">
               Carbohidratos g (por 100g)
             </label>
             <input
@@ -134,7 +134,7 @@ export function CustomFoodSheet({ open, onClose, onCreated }: CustomFoodSheetPro
             />
           </div>
           <div>
-            <label className="mb-1 block text-[12px] font-semibold text-[#485856]">
+            <label className="mb-1 block text-[12px] font-semibold text-[var(--color-macro-fats)]">
               Grasas g (por 100g)
             </label>
             <input

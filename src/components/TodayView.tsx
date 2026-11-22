@@ -1,10 +1,11 @@
 import {
   ChefHat,
+  ChevronLeft,
+  ChevronRight,
   Coffee,
   Flame,
   Moon,
   Plus,
-  RotateCcw,
   Sun,
   Sunset,
   Trash2
@@ -12,8 +13,8 @@ import {
 import { motion } from 'motion/react';
 import { useMemo, useRef, useState } from 'react';
 import {
+  addDaysToKey,
   formatSpanishDateHeader,
-  getWeekStripDays,
   toDateKey
 } from '../domain/dateUtils';
 import { evaluateDayAdherence, sumDailyMacros } from '../domain/nutritionCalculator';
@@ -58,7 +59,6 @@ export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
 
   const todayKey = toDateKey();
   const dateHeader = formatSpanishDateHeader(selectedDate, todayKey);
-  const weekDays = useMemo(() => getWeekStripDays(selectedDate, todayKey), [selectedDate, todayKey]);
 
   const dayLog = logs[selectedDate];
   const consumed = useMemo(() => sumDailyMacros(dayLog), [dayLog]);
@@ -133,19 +133,19 @@ export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
       label: 'Proteína',
       consumed: consumed.protein,
       goal: goals.proteinGrams,
-      barColor: '#2A6F68'
+      barColor: 'var(--color-macro-protein)'
     },
     {
       label: 'Carbos',
       consumed: consumed.carbs,
       goal: goals.carbsGrams,
-      barColor: '#D46A43'
+      barColor: 'var(--color-macro-carbs)'
     },
     {
       label: 'Grasas',
       consumed: consumed.fat,
       goal: goals.fatGrams,
-      barColor: '#013230'
+      barColor: 'var(--color-macro-fats)'
     }
   ];
 
@@ -153,26 +153,36 @@ export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
     <div className="pb-32">
       {/* Translucent Top Header */}
       <header className="liquid-glass-header sticky top-0 z-30 pt-[env(safe-area-inset-top,0px)]">
-        <div className="mx-auto flex max-w-lg items-center justify-between px-5 pt-3.5 pb-2.5">
-          <div>
-            <div className="flex items-center gap-2">
+        <div className="mx-auto flex max-w-lg items-center justify-between px-4 pt-3.5 pb-3">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setSelectedDate(addDaysToKey(selectedDate, -1))}
+              aria-label="Día anterior"
+              className="pressable-sm flex h-10 w-10 items-center justify-center rounded-full text-[#013230] hover:bg-[#E8DEC8]/60"
+            >
+              <ChevronLeft className="h-5 w-5" strokeWidth={2.4} />
+            </button>
+
+            <div>
               <h1 className="heading-tight text-[26px] font-bold text-[#101918]">
                 {dateHeader.primary}
               </h1>
-              {!dateHeader.isToday && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedDate(todayKey)}
-                  className="pressable-sm inline-flex min-h-[34px] items-center gap-1 rounded-full bg-[#E8DEC8] px-3 py-1 text-[12px] font-semibold text-[#013230]"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  Ir a hoy
-                </button>
-              )}
+              <p className="text-[13px] font-medium text-[#41514F]">
+                {dateHeader.secondary}
+              </p>
             </div>
-            <p className="text-[13px] font-medium text-[#41514F]">
-              {dateHeader.secondary}
-            </p>
+
+            {!dateHeader.isToday && (
+              <button
+                type="button"
+                onClick={() => setSelectedDate(addDaysToKey(selectedDate, 1))}
+                aria-label="Día siguiente"
+                className="pressable-sm flex h-10 w-10 items-center justify-center rounded-full text-[#013230] hover:bg-[#E8DEC8]/60"
+              >
+                <ChevronRight className="h-5 w-5" strokeWidth={2.4} />
+              </button>
+            )}
           </div>
 
           <div
@@ -185,128 +195,52 @@ export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
             </span>
           </div>
         </div>
-
-        {/* 7-day interactive calendar strip */}
-        <div className="mx-auto grid max-w-lg grid-cols-7 gap-1 px-4 pb-3">
-          {weekDays.map((day) => {
-            const isSelected = day.dateKey === selectedDate;
-            const summary = evaluateDayAdherence(day.dateKey, logs[day.dateKey], goals);
-            const hasLog = summary.entryCount > 0;
-            return (
-              <button
-                key={day.dateKey}
-                type="button"
-                disabled={day.isFuture}
-                onClick={() => setSelectedDate(day.dateKey)}
-                aria-label={`${day.dayNameShort} ${day.dayNumber}`}
-                aria-pressed={isSelected}
-                className={`pressable-sm relative flex min-h-[54px] flex-col items-center justify-center rounded-2xl py-2 transition-colors ${
-                  isSelected
-                    ? 'bg-[#013230] text-[#F3EBDD] shadow-sm'
-                    : day.isFuture
-                      ? 'cursor-default opacity-35 text-[#53625F]'
-                      : 'text-[#41514F] hover:bg-[#E8DEC8]/50'
-                }`}
-              >
-                <span className="text-[11px] font-semibold uppercase tracking-wide opacity-85">
-                  {day.dayNameShort}
-                </span>
-                <span className="tabular-nums mt-0.5 text-[14px] font-bold">
-                  {day.dayNumber}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className={`mt-1 h-1.5 w-1.5 rounded-full ${
-                    !hasLog
-                      ? 'bg-transparent'
-                      : isSelected
-                        ? 'bg-[#F3EBDD]'
-                        : summary.level === 'optimal'
-                          ? 'bg-[#013230]'
-                          : summary.level === 'far_over'
-                            ? 'bg-[#D46A43]'
-                            : 'bg-[#2A6F68]'
-                  }`}
-                />
-              </button>
-            );
-          })}
-        </div>
       </header>
 
       <main className="mx-auto max-w-lg space-y-5 px-4 pt-4">
-        {/* Hero Calorie & Macros Summary Card */}
+        {/* Hero Calorie Arc & Macro Progress Bars (outside cards) */}
         <section
           aria-label="Resumen calórico del día"
-          className="surface-card rounded-[28px] p-5"
+          className="flex flex-col items-center pt-3 pb-1"
         >
-          <div className="flex flex-col items-center gap-5 sm:flex-row sm:justify-between">
-            <CalorieRing consumed={consumed.calories} goal={goals.calories} />
+          <CalorieRing consumed={consumed.calories} goal={goals.calories} />
 
-            <div className="w-full flex-1 space-y-3">
-              {/* Consumed vs Goal numbers */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="rounded-2xl bg-[#F3EBDD]/85 px-3.5 py-2.5">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-[#41514F]">
-                    Consumido
+          {/* Macro Progress Bars (stacked full-width) */}
+          <div className="mt-5 w-full space-y-3.5">
+            {macroCards.map((macro) => {
+              const isOver = macro.consumed > macro.goal;
+              const pct = Math.min(
+                100,
+                Math.round((macro.consumed / Math.max(1, macro.goal)) * 100)
+              );
+              return (
+                <div key={macro.label} className="w-full space-y-1.5">
+                  <div className="flex items-baseline justify-between text-[14px]">
+                    <span className="font-semibold text-[#101918]">{macro.label}</span>
+                    <span className="tabular-nums font-medium text-[#41514F]">
+                      <strong
+                        className={isOver ? 'text-[var(--color-macro-over)]' : 'text-[#101918]'}
+                      >
+                        {Math.round(macro.consumed)}
+                      </strong>{' '}
+                      / {macro.goal} g
+                    </span>
                   </div>
-                  <div className="tabular-nums mt-0.5 text-[20px] font-bold text-[#101918]">
-                    {consumed.calories}{' '}
-                    <span className="text-[12px] font-medium text-[#53625F]">kcal</span>
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#E8DEC8]">
+                    <motion.div
+                      initial={false}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ type: 'spring', bounce: 0, duration: 0.55 }}
+                      className="h-full rounded-full"
+                      style={{
+                        backgroundColor: isOver ? 'var(--color-macro-over)' : macro.barColor
+                      }}
+                    />
                   </div>
                 </div>
-                <div className="rounded-2xl bg-[#F3EBDD]/85 px-3.5 py-2.5">
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-[#41514F]">
-                    Objetivo
-                  </div>
-                  <div className="tabular-nums mt-0.5 text-[20px] font-bold text-[#013230]">
-                    {goals.calories}{' '}
-                    <span className="text-[12px] font-medium text-[#53625F]">kcal</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Macro Distribution Strip */}
-              <div className="space-y-2.5 pt-1">
-                {macroCards.map((macro) => {
-                  const pct = Math.min(
-                    100,
-                    Math.round((macro.consumed / Math.max(1, macro.goal)) * 100)
-                  );
-                  return (
-                    <div key={macro.label}>
-                      <div className="mb-1 flex items-baseline justify-between text-[13px]">
-                        <span className="font-semibold text-[#101918]">{macro.label}</span>
-                        <span className="tabular-nums font-medium text-[#41514F]">
-                          <strong className="text-[#101918]">{Math.round(macro.consumed)}</strong> /{' '}
-                          {macro.goal} g
-                        </span>
-                      </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-[#E8DEC8]">
-                        <motion.div
-                          initial={false}
-                          animate={{ width: `${pct}%` }}
-                          transition={{ type: 'spring', bounce: 0, duration: 0.55 }}
-                          className="h-full rounded-full"
-                          style={{ backgroundColor: macro.barColor }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+              );
+            })}
           </div>
-
-          {/* Singular Prominent Primary Action Button in Deep Teal */}
-          <button
-            type="button"
-            onClick={() => openQuickAddForSlot('snack')}
-            className="pressable btn-primary-teal mt-5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-[#013230] px-5 text-[15px] font-semibold text-[#F3EBDD] shadow-[0_6px_18px_rgba(1,50,48,0.18)]"
-          >
-            <Plus className="h-5 w-5" strokeWidth={2.4} />
-            Registrar alimento o plato
-          </button>
         </section>
 
         {/* Meals Breakdown */}

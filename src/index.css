@@ -24,6 +24,15 @@
   --aux-terracotta-tint: #F5E1D8;
   --aux-terracotta-border: rgba(212, 106, 67, 0.25);
 
+  /* Macronutrient Palette Tokens */
+  --color-macro-protein: #C85A32;
+  --color-macro-protein-bg: rgba(200, 90, 50, 0.12);
+  --color-macro-carbs: #D99B26;
+  --color-macro-carbs-bg: rgba(217, 155, 38, 0.12);
+  --color-macro-fats: #3B7A57;
+  --color-macro-fats-bg: rgba(59, 122, 87, 0.12);
+  --color-macro-over: #B83A3A;
+
   /* Ink Typography & Borders */
   --ink-primary: #101918;
   --ink-secondary: #41514F;

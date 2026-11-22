@@ -462,21 +462,27 @@ export function ProgressView() {
                   {inspectedSummary.score}%
                 </div>
               </div>
-              <div className="rounded-2xl bg-[#D7E6E3]/65 p-2">
-                <div className="text-[11px] font-semibold text-[#1F5B55]">Proteína</div>
-                <div className="tabular-nums text-[15px] font-bold text-[#013230]">
+              <div className="rounded-2xl bg-[var(--color-macro-protein-bg)] p-2">
+                <div className="text-[11px] font-semibold text-[var(--color-macro-protein)]">
+                  Proteína
+                </div>
+                <div className="tabular-nums text-[15px] font-bold text-[var(--color-macro-protein)]">
                   {inspectedSummary.macrosConsumed.protein}g
                 </div>
               </div>
-              <div className="rounded-2xl bg-[#F5E1D8]/70 p-2">
-                <div className="text-[11px] font-semibold text-[#8B3B1E]">Carbos</div>
-                <div className="tabular-nums text-[15px] font-bold text-[#8B3B1E]">
+              <div className="rounded-2xl bg-[var(--color-macro-carbs-bg)] p-2">
+                <div className="text-[11px] font-semibold text-[var(--color-macro-carbs)]">
+                  Carbos
+                </div>
+                <div className="tabular-nums text-[15px] font-bold text-[var(--color-macro-carbs)]">
                   {inspectedSummary.macrosConsumed.carbs}g
                 </div>
               </div>
-              <div className="rounded-2xl bg-[#E8DEC8]/70 p-2">
-                <div className="text-[11px] font-semibold text-[#41514F]">Grasas</div>
-                <div className="tabular-nums text-[15px] font-bold text-[#101918]">
+              <div className="rounded-2xl bg-[var(--color-macro-fats-bg)] p-2">
+                <div className="text-[11px] font-semibold text-[var(--color-macro-fats)]">
+                  Grasas
+                </div>
+                <div className="tabular-nums text-[15px] font-bold text-[var(--color-macro-fats)]">
                   {inspectedSummary.macrosConsumed.fat}g
                 </div>
               </div>

@@ -294,20 +294,20 @@ export function QuickAddSheet({
                 {previewMacros.calories}
               </div>
             </div>
-            <div className="rounded-2xl bg-[#D7E6E3] p-3 text-center text-[#013230]">
-              <div className="text-[11px] font-semibold text-[#2A6F68]">Proteína</div>
+            <div className="rounded-2xl bg-[var(--color-macro-protein-bg)] p-3 text-center text-[var(--color-macro-protein)]">
+              <div className="text-[11px] font-semibold">Proteína</div>
               <div className="tabular-nums mt-0.5 text-[18px] font-bold">
                 {previewMacros.protein}g
               </div>
             </div>
-            <div className="rounded-2xl bg-[#F5E1D8] p-3 text-center text-[#8B3B1E]">
-              <div className="text-[11px] font-semibold text-[#B54E28]">Carbos</div>
+            <div className="rounded-2xl bg-[var(--color-macro-carbs-bg)] p-3 text-center text-[var(--color-macro-carbs)]">
+              <div className="text-[11px] font-semibold">Carbos</div>
               <div className="tabular-nums mt-0.5 text-[18px] font-bold">
                 {previewMacros.carbs}g
               </div>
             </div>
-            <div className="rounded-2xl bg-[#E8DEC8]/80 p-3 text-center text-[#101918]">
-              <div className="text-[11px] font-semibold text-[#485856]">Grasas</div>
+            <div className="rounded-2xl bg-[var(--color-macro-fats-bg)] p-3 text-center text-[var(--color-macro-fats)]">
+              <div className="text-[11px] font-semibold">Grasas</div>
               <div className="tabular-nums mt-0.5 text-[18px] font-bold">
                 {previewMacros.fat}g
               </div>
@@ -354,20 +354,20 @@ export function QuickAddSheet({
                 {previewMacros.calories}
               </div>
             </div>
-            <div className="rounded-2xl bg-[#D7E6E3] p-3 text-center text-[#013230]">
-              <div className="text-[11px] font-semibold text-[#2A6F68]">Proteína</div>
+            <div className="rounded-2xl bg-[var(--color-macro-protein-bg)] p-3 text-center text-[var(--color-macro-protein)]">
+              <div className="text-[11px] font-semibold">Proteína</div>
               <div className="tabular-nums mt-0.5 text-[18px] font-bold">
                 {previewMacros.protein}g
               </div>
             </div>
-            <div className="rounded-2xl bg-[#F5E1D8] p-3 text-center text-[#8B3B1E]">
-              <div className="text-[11px] font-semibold text-[#B54E28]">Carbos</div>
+            <div className="rounded-2xl bg-[var(--color-macro-carbs-bg)] p-3 text-center text-[var(--color-macro-carbs)]">
+              <div className="text-[11px] font-semibold">Carbos</div>
               <div className="tabular-nums mt-0.5 text-[18px] font-bold">
                 {previewMacros.carbs}g
               </div>
             </div>
-            <div className="rounded-2xl bg-[#E8DEC8]/80 p-3 text-center text-[#101918]">
-              <div className="text-[11px] font-semibold text-[#485856]">Grasas</div>
+            <div className="rounded-2xl bg-[var(--color-macro-fats-bg)] p-3 text-center text-[var(--color-macro-fats)]">
+              <div className="text-[11px] font-semibold">Grasas</div>
               <div className="tabular-nums mt-0.5 text-[18px] font-bold">
                 {previewMacros.fat}g
               </div>
