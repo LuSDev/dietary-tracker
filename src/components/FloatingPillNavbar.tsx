@@ -6,6 +6,7 @@ interface FloatingPillNavbarProps {
   activeTab: AppTab;
   onSelectTab: (tab: AppTab) => void;
   onOpenQuickAdd: () => void;
+  revealed?: boolean;
 }
 
 const LEFT_NAV_ITEMS: Array<{
@@ -29,7 +30,8 @@ const RIGHT_NAV_ITEMS: Array<{
 export function FloatingPillNavbar({
   activeTab,
   onSelectTab,
-  onOpenQuickAdd
+  onOpenQuickAdd,
+  revealed = true
 }: FloatingPillNavbarProps) {
   const renderTabButton = ({
     id,
@@ -47,7 +49,7 @@ export function FloatingPillNavbar({
         type="button"
         onClick={() => onSelectTab(id)}
         aria-current={isActive ? 'page' : undefined}
-        className={`pressable-sm relative flex min-h-[48px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-1.5 py-1.5 text-[11px] font-semibold tracking-tight transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#013230] ${
+        className={`pressable-sm relative z-10 flex min-h-[48px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-1.5 py-1.5 text-[11px] font-semibold tracking-tight transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#013230] ${
           isActive
             ? 'text-[#101918]'
             : 'text-[#485856] hover:bg-[#E8DEC8]/55 hover:text-[#101918]'
@@ -82,8 +84,19 @@ export function FloatingPillNavbar({
         className="scroll-edge-mask-bottom h-24 w-full"
       />
 
-      <nav
+      <motion.nav
         aria-label="Navegación principal"
+        initial={false}
+        animate={{
+          y: revealed ? 0 : 20,
+          opacity: revealed ? 1 : 0
+        }}
+        transition={{
+          type: 'spring',
+          bounce: 0,
+          duration: 0.54,
+          delay: 0.04
+        }}
         className="pointer-events-auto -mt-16 mb-[calc(0.875rem+env(safe-area-inset-bottom,0px))] w-[calc(100%-1.5rem)] max-w-[440px]"
       >
         <div className="liquid-glass-pill flex items-center justify-between gap-1 rounded-full p-1.5">
@@ -94,14 +107,14 @@ export function FloatingPillNavbar({
             type="button"
             onClick={onOpenQuickAdd}
             aria-label="Registrar alimento o plato"
-            className="pressable btn-primary-teal mx-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#013230] text-[#F3EBDD] shadow-[0_6px_16px_rgba(1,50,48,0.28)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#013230]"
+            className="pressable btn-primary-teal relative z-20 mx-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#013230] text-[#F3EBDD] shadow-[0_6px_16px_rgba(1,50,48,0.28)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#013230]"
           >
             <Plus className="h-6 w-6" strokeWidth={2.5} aria-hidden="true" />
           </button>
 
           {RIGHT_NAV_ITEMS.map(renderTabButton)}
         </div>
-      </nav>
+      </motion.nav>
     </div>
   );
 }
