@@ -20,13 +20,16 @@ import {
 import { evaluateDayAdherence, sumDailyMacros } from '../domain/nutritionCalculator';
 import { MEAL_SLOT_META, MealLogEntry, MealSlot } from '../domain/types';
 import { useNutritionStore } from '../store/useNutritionStore';
+import { AnimatedNumber } from './AnimatedNumber';
 import { BottomSheet } from './BottomSheet';
 import { CalorieRing } from './CalorieRing';
 import { QuickAddSheet } from './QuickAddSheet';
+import { RevealSection } from './RevealSection';
 import { UndoToast } from './UndoToast';
 
 interface TodayViewProps {
   onOpenDishBuilder: () => void;
+  revealed?: boolean;
 }
 
 const SLOT_ICONS: Record<MealSlot, typeof Coffee> = {
@@ -36,7 +39,7 @@ const SLOT_ICONS: Record<MealSlot, typeof Coffee> = {
   dinner: Moon
 };
 
-export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
+export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps) {
   const selectedDate = useNutritionStore((s) => s.selectedDate);
   const setSelectedDate = useNutritionStore((s) => s.setSelectedDate);
   const goals = useNutritionStore((s) => s.goals);
@@ -197,22 +200,30 @@ export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg space-y-5 px-4 pt-4">
+      <main key={selectedDate} className="mx-auto max-w-lg space-y-5 px-4 pt-4">
         {/* Hero Calorie Arc & Macro Progress Bars (outside cards) */}
-        <section
+        <RevealSection
           aria-label="Resumen calórico del día"
+          revealed={revealed}
+          offsetY={10}
+          duration={0.54}
           className="flex flex-col items-center pt-3 pb-1"
         >
-          <CalorieRing consumed={consumed.calories} goal={goals.calories} />
+          <CalorieRing
+            consumed={consumed.calories}
+            goal={goals.calories}
+            revealed={revealed}
+          />
 
           {/* Macro Progress Bars (stacked full-width) */}
           <div className="mt-5 w-full space-y-3.5">
-            {macroCards.map((macro) => {
+            {macroCards.map((macro, idx) => {
               const isOver = macro.consumed > macro.goal;
               const pct = Math.min(
                 100,
                 Math.round((macro.consumed / Math.max(1, macro.goal)) * 100)
               );
+              const displayPct = revealed ? pct : 0;
               return (
                 <div key={macro.label} className="w-full space-y-1.5">
                   <div className="flex items-baseline justify-between text-[14px]">
@@ -221,16 +232,26 @@ export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
                       <strong
                         className={isOver ? 'text-[var(--color-macro-over)]' : 'text-[#101918]'}
                       >
-                        {Math.round(macro.consumed)}
+                        <AnimatedNumber
+                          value={macro.consumed}
+                          enabled={revealed}
+                          duration={0.62}
+                          delay={idx * 0.035}
+                        />
                       </strong>{' '}
                       / {macro.goal} g
                     </span>
                   </div>
                   <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#E8DEC8]">
                     <motion.div
-                      initial={false}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ type: 'spring', bounce: 0, duration: 0.55 }}
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${displayPct}%` }}
+                      transition={{
+                        type: 'spring',
+                        bounce: 0,
+                        duration: 0.62,
+                        delay: revealed ? idx * 0.035 : 0
+                      }}
                       className="h-full rounded-full"
                       style={{
                         backgroundColor: isOver ? 'var(--color-macro-over)' : macro.barColor
@@ -241,10 +262,17 @@ export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
               );
             })}
           </div>
-        </section>
+        </RevealSection>
 
         {/* Meals Breakdown */}
-        <section aria-label="Comidas registradas" className="space-y-3.5">
+        <RevealSection
+          aria-label="Comidas registradas"
+          revealed={revealed}
+          offsetY={14}
+          delay={0.05}
+          duration={0.58}
+          className="space-y-3.5"
+        >
           {(Object.keys(MEAL_SLOT_META) as MealSlot[]).map((slot) => {
             const meta = MEAL_SLOT_META[slot];
             const items = entriesBySlot[slot];
@@ -335,7 +363,7 @@ export function TodayView({ onOpenDishBuilder }: TodayViewProps) {
               </div>
             );
           })}
-        </section>
+        </RevealSection>
       </main>
 
       <UndoToast

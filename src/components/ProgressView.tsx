@@ -11,6 +11,7 @@ import {
 import { evaluateDayAdherence } from '../domain/nutritionCalculator';
 import { AdherenceLevel } from '../domain/types';
 import { useNutritionStore } from '../store/useNutritionStore';
+import { RevealSection } from './RevealSection';
 
 const WEEKDAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
@@ -193,7 +194,12 @@ export function ProgressView() {
 
       <main className="mx-auto max-w-lg space-y-5 px-4 pt-4">
         {/* KPI Summary Grid */}
-        <section aria-label="Resumen estadístico" className="grid grid-cols-2 gap-3">
+        <RevealSection
+          aria-label="Resumen estadístico"
+          offsetY={10}
+          duration={0.54}
+          className="grid grid-cols-2 gap-3"
+        >
           <div className="surface-card rounded-[24px] p-4">
             <div className="flex items-center gap-1.5 text-[12px] font-semibold text-[#41514F]">
               <Target className="h-4 w-4 text-[#013230]" />
@@ -292,11 +298,14 @@ export function ProgressView() {
               })}
             </div>
           </div>
-        </section>
+        </RevealSection>
 
         {/* Illuminated Monthly Heatmap Calendar */}
-        <section
+        <RevealSection
           aria-label="Calendario histórico de adherencia"
+          offsetY={14}
+          delay={0.05}
+          duration={0.58}
           className="surface-card rounded-[28px] p-5"
         >
           <div className="mb-4 flex items-center justify-between">
@@ -406,11 +415,14 @@ export function ProgressView() {
               <span className="font-semibold text-[#8B3B1E]">Exceso</span>
             </div>
           </div>
-        </section>
+        </RevealSection>
 
         {/* Interactive Day Inspector Card */}
-        <section
+        <RevealSection
           aria-label="Detalle del día seleccionado"
+          offsetY={14}
+          delay={0.1}
+          duration={0.58}
           className="surface-card rounded-[24px] p-4"
         >
           <div className="flex items-start justify-between gap-2">
@@ -488,7 +500,7 @@ export function ProgressView() {
               </div>
             </div>
           )}
-        </section>
+        </RevealSection>
       </main>
     </div>
   );

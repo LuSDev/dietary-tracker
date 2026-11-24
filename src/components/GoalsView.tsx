@@ -7,6 +7,7 @@ import {
 } from '../domain/nutritionCalculator';
 import { useNutritionStore } from '../store/useNutritionStore';
 import { BottomSheet } from './BottomSheet';
+import { RevealSection } from './RevealSection';
 
 const MACRO_PRESETS = [
   { id: 'balanced', label: 'Equilibrado', p: 30, c: 40, f: 30 },
@@ -137,7 +138,7 @@ export function GoalsView() {
 
       <main className="mx-auto max-w-lg space-y-5 px-4 pt-4">
         {/* Daily Calorie Target Card */}
-        <section className="surface-card rounded-[28px] p-5">
+        <RevealSection offsetY={10} duration={0.54} className="surface-card rounded-[28px] p-5">
           <div className="flex items-center justify-between">
             <span className="text-[13px] font-bold uppercase tracking-wider text-[#485856]">
               Objetivo Calórico Diario
@@ -209,10 +210,10 @@ export function GoalsView() {
               />
             </div>
           </div>
-        </section>
+        </RevealSection>
 
         {/* Quick Macro Presets */}
-        <section className="surface-card rounded-[24px] p-4">
+        <RevealSection offsetY={14} delay={0.05} duration={0.58} className="surface-card rounded-[24px] p-4">
           <h2 className="mb-3 flex items-center gap-1.5 text-[14px] font-bold text-[#101918]">
             <Sparkles className="h-4 w-4 text-[#013230]" />
             Perfiles de distribución rápidos
@@ -245,10 +246,10 @@ export function GoalsView() {
               );
             })}
           </div>
-        </section>
+        </RevealSection>
 
         {/* Individual Gram Controls */}
-        <section className="surface-card space-y-4 rounded-[24px] p-4">
+        <RevealSection offsetY={14} delay={0.1} duration={0.58} className="surface-card space-y-4 rounded-[24px] p-4">
           <div>
             <h2 className="text-[15px] font-bold text-[#101918]">
               Ajuste fino por macronutriente
@@ -329,10 +330,10 @@ export function GoalsView() {
               </div>
             </div>
           ))}
-        </section>
+        </RevealSection>
 
         {/* Local Storage Data Management */}
-        <section className="surface-card rounded-[24px] p-4">
+        <RevealSection offsetY={14} delay={0.15} duration={0.58} className="surface-card rounded-[24px] p-4">
           <h2 className="text-[14px] font-bold text-[#101918]">
             Gestión de datos locales
           </h2>
@@ -385,7 +386,7 @@ export function GoalsView() {
               </div>
             )}
           </div>
-        </section>
+        </RevealSection>
       </main>
 
       {/* TDEE Guided Calculator Bottom Sheet */}
