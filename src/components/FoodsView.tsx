@@ -6,6 +6,7 @@ import { useNutritionStore } from '../store/useNutritionStore';
 import { CustomFoodSheet } from './CustomFoodSheet';
 import { DishBuilderSheet } from './DishBuilderSheet';
 import { QuickAddSheet } from './QuickAddSheet';
+import { RevealSection } from './RevealSection';
 import { UndoToast } from './UndoToast';
 
 type FoodsSubTab = 'foods' | 'dishes';
@@ -187,7 +188,7 @@ export function FoodsView() {
 
       <main className="mx-auto max-w-lg px-4 pt-3.5">
         {subTab === 'foods' ? (
-          <div className="space-y-2.5">
+          <RevealSection key="foods" offsetY={12} duration={0.54} className="space-y-2.5">
             {filteredFoods.length === 0 ? (
               <div className="surface-card rounded-[24px] p-8 text-center">
                 <p className="text-[15px] font-semibold text-[#101918]">
@@ -246,9 +247,9 @@ export function FoodsView() {
                 );
               })
             )}
-          </div>
+          </RevealSection>
         ) : (
-          <div className="space-y-3.5">
+          <RevealSection key="dishes" offsetY={12} duration={0.54} className="space-y-3.5">
             {/* CTA Card to build a new dish */}
             <button
               type="button"
@@ -376,7 +377,7 @@ export function FoodsView() {
                 </article>
               );
             })}
-          </div>
+          </RevealSection>
         )}
       </main>
 
