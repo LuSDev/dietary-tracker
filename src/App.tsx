@@ -4,12 +4,16 @@ import { DishBuilderSheet } from './components/DishBuilderSheet';
 import { FloatingPillNavbar } from './components/FloatingPillNavbar';
 import { FoodsView } from './components/FoodsView';
 import { GoalsView } from './components/GoalsView';
+import { InstallAppModal } from './components/InstallAppModal';
 import { BootPhase, LaunchIntro } from './components/LaunchIntro';
 import { ProgressView } from './components/ProgressView';
 import { QuickAddSheet } from './components/QuickAddSheet';
 import { TodayView } from './components/TodayView';
+import { isStandalonePWA } from './domain/pwa';
 import { CustomDish } from './domain/types';
 import { useNutritionStore } from './store/useNutritionStore';
+
+const INSTALL_MODAL_DISMISSED_KEY = 'nura-install-modal-dismissed';
 
 function syncLightThemeColor(color: string) {
   const lightThemeMeta = document.querySelector(
@@ -26,10 +30,44 @@ export function App() {
   const selectedDate = useNutritionStore((s) => s.selectedDate);
   const shouldReduceMotion = useReducedMotion();
 
-  const [bootPhase, setBootPhase] = useState<BootPhase>('intro');
+  const [isStandalone, setIsStandalone] = useState<boolean>(() => isStandalonePWA());
+  const [bootPhase, setBootPhase] = useState<BootPhase>(() =>
+    isStandalonePWA() ? 'intro' : 'ready'
+  );
+  const [installModalOpen, setInstallModalOpen] = useState<boolean>(() => {
+    if (isStandalonePWA()) return false;
+    try {
+      return window.sessionStorage.getItem(INSTALL_MODAL_DISMISSED_KEY) !== '1';
+    } catch {
+      return true;
+    }
+  });
   const [globalQuickAddOpen, setGlobalQuickAddOpen] = useState(false);
   const [globalDishBuilderOpen, setGlobalDishBuilderOpen] = useState(false);
   const [newlyCreatedDishToLog, setNewlyCreatedDishToLog] = useState<CustomDish | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayModeChange = () => {
+      const standalone = isStandalonePWA();
+      setIsStandalone(standalone);
+      if (standalone) {
+        setInstallModalOpen(false);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleDisplayModeChange);
+    return () => mediaQuery.removeEventListener('change', handleDisplayModeChange);
+  }, []);
+
+  const handleDismissInstallModal = () => {
+    setInstallModalOpen(false);
+    try {
+      window.sessionStorage.setItem(INSTALL_MODAL_DISMISSED_KEY, '1');
+    } catch {
+      // Ignore storage failures in private browsing
+    }
+  };
 
   useEffect(() => {
     if (bootPhase === 'intro') {
@@ -66,10 +104,17 @@ export function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      {bootPhase !== 'ready' && (
+      {isStandalone && bootPhase !== 'ready' && (
         <LaunchIntro
           phase={bootPhase}
           onSkip={() => setBootPhase('handoff')}
+        />
+      )}
+
+      {!isStandalone && (
+        <InstallAppModal
+          open={installModalOpen}
+          onDismiss={handleDismissInstallModal}
         />
       )}
 
