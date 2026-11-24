@@ -1,4 +1,4 @@
-import { BarChart3, Flame, Plus, Target, UtensilsCrossed } from 'lucide-react';
+import { BarChart3, Flame, Plus, User, UtensilsCrossed } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AppTab } from '../domain/types';
 
@@ -24,7 +24,7 @@ const RIGHT_NAV_ITEMS: Array<{
   Icon: typeof Flame;
 }> = [
   { id: 'progress', label: 'Progreso', Icon: BarChart3 },
-  { id: 'goals', label: 'Objetivos', Icon: Target }
+  { id: 'goals', label: 'Personal', Icon: User }
 ];
 
 export function FloatingPillNavbar({
@@ -97,7 +97,7 @@ export function FloatingPillNavbar({
           duration: 0.54,
           delay: 0.04
         }}
-        className="pointer-events-auto -mt-16 mb-[calc(0.875rem+env(safe-area-inset-bottom,0px))] w-[calc(100%-1.5rem)] max-w-[440px]"
+        className="pointer-events-auto -mt-16 mb-[max(0.75rem,calc(env(safe-area-inset-bottom,0px)*0.65))] w-[calc(100%-1.5rem)] max-w-[440px]"
       >
         <div className="liquid-glass-pill flex items-center justify-between gap-1 rounded-full p-1.5">
           {LEFT_NAV_ITEMS.map(renderTabButton)}

@@ -120,7 +120,7 @@ export function GoalsView() {
         <div className="mx-auto flex max-w-lg items-center justify-between px-4 pt-3.5 pb-3">
           <div>
             <h1 className="heading-tight text-[24px] font-bold text-[#101918]">
-              Objetivos
+              Personal
             </h1>
             <p className="text-[13px] font-medium text-[#485856]">
               Meta calórica diaria y distribución nutricional
