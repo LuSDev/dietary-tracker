@@ -165,25 +165,6 @@ export function LaunchIntro({ phase, onSkip }: LaunchIntroProps) {
               />
             </motion.g>
 
-            {/* Subtle Equilibrium Halo when the rings settle */}
-            {!shouldReduceMotion && (
-              <motion.circle
-                cx="256"
-                cy="256"
-                r="36"
-                stroke="#D46A43"
-                strokeWidth="4"
-                style={{ transformOrigin: '256px 256px', transformBox: 'view-box' }}
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1.55, opacity: [0, 0.32, 0] }}
-                transition={{
-                  duration: 0.55,
-                  delay: 0.48,
-                  ease: [0.16, 1, 0.3, 1]
-                }}
-              />
-            )}
-
             {/* Center Terracotta Core (matches favicon r=36 #D46A43) */}
             <motion.circle
               cx="256"
@@ -245,7 +226,7 @@ export function LaunchIntro({ phase, onSkip }: LaunchIntroProps) {
           }}
           className="mt-1.5 text-[15px] font-normal tracking-[0.03em] text-[#F3EBDD]/68 sm:text-[16px]"
         >
-          Calorie Tracker
+          Calorie Tracker.
         </motion.span>
       </motion.div>
     </motion.div>
