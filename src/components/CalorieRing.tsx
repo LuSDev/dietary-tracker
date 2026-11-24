@@ -1,15 +1,23 @@
 import { motion } from 'motion/react';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface CalorieRingProps {
   consumed: number;
   goal: number;
   size?: number;
+  revealed?: boolean;
 }
 
-export function CalorieRing({ consumed, goal, size = 240 }: CalorieRingProps) {
+export function CalorieRing({
+  consumed,
+  goal,
+  size = 240,
+  revealed = true
+}: CalorieRingProps) {
   const safeGoal = Math.max(1, goal);
   const isOver = consumed > goal;
-  const progress = Math.min(1, Math.max(0, consumed / safeGoal));
+  const rawProgress = Math.min(1, Math.max(0, consumed / safeGoal));
+  const progress = revealed ? rawProgress : 0;
 
   const strokeWidth = 20;
   const center = size / 2;
@@ -60,7 +68,7 @@ export function CalorieRing({ consumed, goal, size = 240 }: CalorieRingProps) {
           strokeLinecap="round"
           strokeDasharray={`${arcLength} ${circumference}`}
           transform={`rotate(${startAngle} ${center} ${center})`}
-          initial={false}
+          initial={{ strokeDashoffset: arcLength, strokeOpacity: 0 }}
           animate={{
             strokeDashoffset,
             strokeOpacity: progress > 0 ? 1 : 0
@@ -89,7 +97,7 @@ export function CalorieRing({ consumed, goal, size = 240 }: CalorieRingProps) {
             isOver ? 'text-[#D46A43]' : 'text-[#101918]'
           }`}
         >
-          {consumed}
+          <AnimatedNumber value={consumed} enabled={revealed} duration={0.65} />
         </span>
         <span className="tabular-nums mt-1.5 text-[13px] font-medium text-[#53625F]">
           de <strong className="font-semibold text-[#41514F]">{goal}</strong> kcal
