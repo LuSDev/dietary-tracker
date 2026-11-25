@@ -5,7 +5,6 @@ import {
   ArrowUpNarrowWide,
   Check,
   ChefHat,
-  ChevronLeft,
   Menu,
   Plus,
   RotateCcw,
@@ -66,7 +65,7 @@ export function QuickAddSheet({
   const logDishToDay = useNutritionStore((s) => s.logDishToDay);
   const shouldReduceMotion = useReducedMotion();
 
-  const [mealSlot, setMealSlot] = useState<MealSlot>(initialMealSlot);
+  const mealSlot = initialMealSlot;
   const [mode, setMode] = useState<SourceMode>(preselectedDish ? 'dishes' : 'foods');
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<FoodCategory | 'all'>('all');
@@ -275,18 +274,22 @@ export function QuickAddSheet({
               {/* Top Navigation Row */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleTopBack}
-                    aria-label={
-                      isInspectingItem && !openedWithPreselection
-                        ? 'Volver al buscador'
-                        : 'Cerrar'
-                    }
-                    className="pressable-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E8DEC8]/85 text-[#101918]"
-                  >
-                    <ChevronLeft className="h-5 w-5" strokeWidth={2.4} />
-                  </button>
+                  {!isInspectingItem && (
+                    <button
+                      type="button"
+                      onClick={() => setDrawerOpen(true)}
+                      aria-label="Abrir filtros y ordenación"
+                      className="pressable-sm relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E8DEC8]/85 text-[#013230]"
+                    >
+                      <Menu className="h-5 w-5" strokeWidth={2.2} />
+                      {hasActiveFilterOrSort && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-[#D46A43] ring-2 ring-[#FAF6EE]"
+                        />
+                      )}
+                    </button>
+                  )}
                   <div className="min-w-0">
                     <h1 className="heading-tight truncate text-[20px] font-bold text-[#101918]">
                       {selectedFood
@@ -303,43 +306,18 @@ export function QuickAddSheet({
                   </div>
                 </div>
 
-                {!isInspectingItem && (
-                  <button
-                    type="button"
-                    onClick={() => setDrawerOpen(true)}
-                    aria-label="Abrir filtros y ordenación"
-                    className="pressable-sm relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E8DEC8]/85 text-[#013230]"
-                  >
-                    <Menu className="h-5 w-5" strokeWidth={2.2} />
-                    {hasActiveFilterOrSort && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-[#D46A43] ring-2 ring-[#FAF6EE]"
-                      />
-                    )}
-                  </button>
-                )}
-              </div>
-
-              {/* Meal Slot Picker Pills */}
-              <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto pb-0.5">
-                {(Object.keys(MEAL_SLOT_META) as MealSlot[]).map((slot) => {
-                  const active = mealSlot === slot;
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setMealSlot(slot)}
-                      className={`pressable-sm shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold transition-colors ${
-                        active
-                          ? 'bg-[#013230] text-[#F3EBDD]'
-                          : 'bg-[#E8DEC8]/75 text-[#485856]'
-                      }`}
-                    >
-                      {MEAL_SLOT_META[slot].label}
-                    </button>
-                  );
-                })}
+                <button
+                  type="button"
+                  onClick={handleTopBack}
+                  aria-label={
+                    isInspectingItem && !openedWithPreselection
+                      ? 'Volver al buscador'
+                      : 'Cerrar'
+                  }
+                  className="pressable-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E8DEC8]/85 text-[#101918]"
+                >
+                  <X className="h-5 w-5" strokeWidth={2.4} />
+                </button>
               </div>
 
               {/* Fixed Segmented Control + Animated Search Bar when browsing */}
@@ -747,11 +725,11 @@ export function QuickAddSheet({
             </div>
           )}
 
-          {/* Right Slide-Over Filter & Sort Drawer */}
+          {/* Left Slide-Over Filter & Sort Drawer */}
           <AnimatePresence>
             {drawerOpen && (
               <div
-                className="fixed inset-0 z-[60] flex justify-end"
+                className="fixed inset-0 z-[60] flex justify-start"
                 role="dialog"
                 aria-modal="true"
                 aria-label="Filtros y ordenación"
@@ -768,15 +746,15 @@ export function QuickAddSheet({
 
                 {/* Drawer Panel */}
                 <motion.aside
-                  initial={shouldReduceMotion ? { opacity: 0 } : { x: '100%' }}
+                  initial={shouldReduceMotion ? { opacity: 0 } : { x: '-100%' }}
                   animate={shouldReduceMotion ? { opacity: 1 } : { x: 0 }}
-                  exit={shouldReduceMotion ? { opacity: 0 } : { x: '100%' }}
+                  exit={shouldReduceMotion ? { opacity: 0 } : { x: '-100%' }}
                   transition={{
                     type: 'spring',
                     bounce: 0,
                     duration: shouldReduceMotion ? 0.12 : 0.34
                   }}
-                  className="relative z-10 flex h-full w-[86%] max-w-[340px] flex-col bg-[#FAF6EE] pt-[env(safe-area-inset-top,0px)] shadow-[-16px_0_40px_rgba(1,50,48,0.18)]"
+                  className="relative z-10 flex h-full w-[86%] max-w-[340px] flex-col bg-[#FAF6EE] pt-[env(safe-area-inset-top,0px)] shadow-[16px_0_40px_rgba(1,50,48,0.18)]"
                 >
                   <div className="flex items-center justify-between border-b border-[#013230]/8 px-5 py-4">
                     <div>
