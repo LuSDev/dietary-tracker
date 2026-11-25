@@ -9,6 +9,7 @@ import { BootPhase, LaunchIntro } from './components/LaunchIntro';
 import { ProgressView } from './components/ProgressView';
 import { QuickAddSheet } from './components/QuickAddSheet';
 import { TodayView } from './components/TodayView';
+import { addDaysToKey, toDateKey } from './domain/dateUtils';
 import { isStandalonePWA } from './domain/pwa';
 import { CustomDish } from './domain/types';
 import { useNutritionStore } from './store/useNutritionStore';
@@ -101,6 +102,8 @@ export function App() {
   }, []);
 
   const isMainRevealed = bootPhase !== 'intro';
+  const todayKey = toDateKey();
+  const yesterdayKey = addDaysToKey(todayKey, -1);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -139,18 +142,16 @@ export function App() {
           onOpenQuickAdd={() => setGlobalQuickAddOpen(true)}
         />
 
-        {globalQuickAddOpen && (
-          <QuickAddSheet
-            open={globalQuickAddOpen}
-            onClose={() => setGlobalQuickAddOpen(false)}
-            dateKey={selectedDate}
-            initialMealSlot="snack"
-            onOpenDishBuilder={() => {
-              setGlobalQuickAddOpen(false);
-              setGlobalDishBuilderOpen(true);
-            }}
-          />
-        )}
+        <QuickAddSheet
+          open={globalQuickAddOpen}
+          onClose={() => setGlobalQuickAddOpen(false)}
+          dateKey={todayKey}
+          initialMealSlot="snack"
+          onOpenDishBuilder={() => {
+            setGlobalQuickAddOpen(false);
+            setGlobalDishBuilderOpen(true);
+          }}
+        />
 
         {globalDishBuilderOpen && (
           <DishBuilderSheet
@@ -160,15 +161,13 @@ export function App() {
           />
         )}
 
-        {newlyCreatedDishToLog && (
-          <QuickAddSheet
-            open={Boolean(newlyCreatedDishToLog)}
-            onClose={() => setNewlyCreatedDishToLog(null)}
-            dateKey={selectedDate}
-            initialMealSlot="lunch"
-            preselectedDish={newlyCreatedDishToLog}
-          />
-        )}
+        <QuickAddSheet
+          open={Boolean(newlyCreatedDishToLog)}
+          onClose={() => setNewlyCreatedDishToLog(null)}
+          dateKey={selectedDate < yesterdayKey ? todayKey : selectedDate}
+          initialMealSlot="lunch"
+          preselectedDish={newlyCreatedDishToLog}
+        />
       </div>
     </MotionConfig>
   );

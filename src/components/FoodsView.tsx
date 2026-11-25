@@ -1,5 +1,6 @@
 import { ChefHat, Edit3, Plus, ShoppingCart, Sparkles, Trash2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
+import { addDaysToKey, toDateKey } from '../domain/dateUtils';
 import { calculateDishNutrition, calculateFoodMacros } from '../domain/nutritionCalculator';
 import { CustomDish, FOOD_CATEGORY_META, FoodCategory, FoodItem } from '../domain/types';
 import { useNutritionStore } from '../store/useNutritionStore';
@@ -434,19 +435,17 @@ export function FoodsView() {
         />
       )}
 
-      {(quickLogFood || quickLogDish) && (
-        <QuickAddSheet
-          open={Boolean(quickLogFood || quickLogDish)}
-          onClose={() => {
-            setQuickLogFood(null);
-            setQuickLogDish(null);
-          }}
-          dateKey={selectedDate}
-          initialMealSlot="lunch"
-          preselectedFood={quickLogFood}
-          preselectedDish={quickLogDish}
-        />
-      )}
+      <QuickAddSheet
+        open={Boolean(quickLogFood || quickLogDish)}
+        onClose={() => {
+          setQuickLogFood(null);
+          setQuickLogDish(null);
+        }}
+        dateKey={selectedDate < addDaysToKey(toDateKey(), -1) ? toDateKey() : selectedDate}
+        initialMealSlot="lunch"
+        preselectedFood={quickLogFood}
+        preselectedDish={quickLogDish}
+      />
     </div>
   );
 }
