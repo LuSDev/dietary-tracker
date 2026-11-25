@@ -5,7 +5,7 @@ import {
   estimateCalorieTarget,
   macrosFromPercentages
 } from '../domain/nutritionCalculator';
-import { useNutritionStore } from '../store/useNutritionStore';
+import { isDemoSeedEnabled, useNutritionStore } from '../store/useNutritionStore';
 import { BottomSheet } from './BottomSheet';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { RevealSection } from './RevealSection';
@@ -342,18 +342,20 @@ export function GoalsView() {
             Todo se guarda offline en tu dispositivo sin necesidad de cuenta.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                resetToDemoSeed();
-                setConfirmClearLogs(false);
-                flashSaved();
-              }}
-              className="pressable-sm inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#E8DEC8] px-4 py-2 text-[13px] font-semibold text-[#101918]"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              Restaurar datos demo
-            </button>
+            {isDemoSeedEnabled && (
+              <button
+                type="button"
+                onClick={() => {
+                  resetToDemoSeed();
+                  setConfirmClearLogs(false);
+                  flashSaved();
+                }}
+                className="pressable-sm inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#E8DEC8] px-4 py-2 text-[13px] font-semibold text-[#101918]"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Restaurar datos demo
+              </button>
+            )}
 
             <button
               type="button"

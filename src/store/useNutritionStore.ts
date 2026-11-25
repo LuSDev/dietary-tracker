@@ -66,6 +66,9 @@ interface NutritionState {
 const generateId = (prefix: string) =>
   `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 
+export const isDemoSeedEnabled =
+  import.meta.env.DEV || import.meta.env.VITE_ENABLE_SEED === 'true';
+
 export const useNutritionStore = create<NutritionState>()(
   persist(
     (set, get) => ({
@@ -74,7 +77,9 @@ export const useNutritionStore = create<NutritionState>()(
       goals: DEFAULT_GOALS,
       foods: INITIAL_FOOD_DATASET,
       dishes: INITIAL_CUSTOM_DISHES,
-      logs: buildInitialSeedLogs(INITIAL_FOOD_DATASET, INITIAL_CUSTOM_DISHES),
+      logs: isDemoSeedEnabled
+        ? buildInitialSeedLogs(INITIAL_FOOD_DATASET, INITIAL_CUSTOM_DISHES)
+        : {},
 
       setActiveTab: (activeTab) => set({ activeTab }),
 
@@ -322,7 +327,9 @@ export const useNutritionStore = create<NutritionState>()(
           goals: DEFAULT_GOALS,
           foods: INITIAL_FOOD_DATASET,
           dishes: INITIAL_CUSTOM_DISHES,
-          logs: buildInitialSeedLogs(INITIAL_FOOD_DATASET, INITIAL_CUSTOM_DISHES, todayKey)
+          logs: isDemoSeedEnabled
+            ? buildInitialSeedLogs(INITIAL_FOOD_DATASET, INITIAL_CUSTOM_DISHES, todayKey)
+            : {}
         });
       },
 
