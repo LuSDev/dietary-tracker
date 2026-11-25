@@ -7,11 +7,12 @@ import {
   Flame,
   Moon,
   Plus,
+  RotateCcw,
   Sun,
   Sunset,
   Trash2
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useMemo, useRef, useState } from 'react';
 import {
   addDaysToKey,
@@ -23,6 +24,7 @@ import { MEAL_SLOT_META, MealLogEntry, MealSlot } from '../domain/types';
 import { useNutritionStore } from '../store/useNutritionStore';
 import { AnimatedNumber } from './AnimatedNumber';
 import { BottomSheet } from './BottomSheet';
+import { CalendarModal } from './CalendarModal';
 import { CalorieRing } from './CalorieRing';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { QuickAddSheet } from './QuickAddSheet';
@@ -53,6 +55,7 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddSlot, setQuickAddSlot] = useState<MealSlot>('lunch');
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<MealLogEntry | null>(null);
   const [editValue, setEditValue] = useState<number>(100);
   const [pendingDeleteEntry, setPendingDeleteEntry] = useState<MealLogEntry | null>(null);
@@ -65,6 +68,10 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
   const undoTimerRef = useRef<number | null>(null);
 
   const todayKey = toDateKey();
+  const yesterdayKey = addDaysToKey(todayKey, -1);
+  const isYesterday = selectedDate === yesterdayKey;
+  const isBeforeYesterday = selectedDate < yesterdayKey;
+  const shouldReduceMotion = useReducedMotion();
   const dateHeader = formatSpanishDateHeader(selectedDate, todayKey);
 
   const dayLog = logs[selectedDate];
@@ -193,16 +200,75 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
             )}
           </div>
 
-          <div
-            className="flex items-center gap-1.5 rounded-full border border-[#D46A43]/25 bg-[#F5E1D8] px-3 py-1.5"
-            title="Días consecutivos cerca de tu objetivo"
-          >
-            <Flame className="h-4 w-4 text-[#B54E28]" strokeWidth={2.3} />
-            <span className="tabular-nums text-[13px] font-bold text-[#8B3B1E]">
-              {streakCount} {streakCount === 1 ? 'día' : 'días'}
-            </span>
+          <div className="flex items-center gap-1.5">
+            <div
+              className="flex items-center gap-1.5 rounded-full border border-[#D46A43]/25 bg-[#F5E1D8] px-3 py-1.5"
+              title="Días consecutivos cerca de tu objetivo"
+            >
+              <Flame className="h-4 w-4 text-[#B54E28]" strokeWidth={2.3} />
+              <span className="tabular-nums text-[13px] font-bold text-[#8B3B1E]">
+                {streakCount} {streakCount === 1 ? 'día' : 'días'}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCalendarOpen(true)}
+              aria-label="Abrir calendario"
+              className="pressable-sm flex h-10 w-10 items-center justify-center rounded-full text-[#101918] hover:bg-[#E8DEC8]/50"
+            >
+              <svg
+                width="23"
+                height="23"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M6 3C4.34315 3 3 4.34315 3 6V18C3 19.6569 4.34315 21 6 21H18C19.6569 21 21 19.6569 21 18V6C21 4.34315 19.6569 3 18 3H6ZM5 8.5C5 7.94772 5.44772 7.5 6 7.5H18C18.5523 7.5 19 7.94772 19 8.5V17.5C19 18.3284 18.3284 19 17.5 19H6.5C5.67157 19 5 18.3284 5 17.5V8.5Z"
+                  fill="currentColor"
+                />
+                <rect x="9.5" y="9.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="12.5" y="9.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="15.5" y="9.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="6.5" y="12.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="9.5" y="12.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="12.5" y="12.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="15.5" y="12.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="6.5" y="15.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="9.5" y="15.25" width="2" height="2" rx="0.5" fill="currentColor" />
+                <rect x="12.5" y="15.25" width="2" height="2" rx="0.5" fill="currentColor" />
+              </svg>
+            </button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {isBeforeYesterday && (
+            <motion.div
+              initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.96 }}
+              animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+              exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -8, scale: 0.96 }}
+              transition={{
+                type: 'spring',
+                bounce: 0,
+                duration: shouldReduceMotion ? 0.14 : 0.26
+              }}
+              className="pointer-events-none absolute inset-x-0 top-full z-20 flex justify-center pt-2"
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedDate(todayKey)}
+                className="pressable-sm pointer-events-auto inline-flex items-center gap-1.5 rounded-full bg-[#DFD2B8] px-3.5 py-1.5 text-[12.5px] font-semibold text-[#101918] shadow-[0_6px_18px_rgba(1,50,48,0.12),inset_0_1px_0_rgba(255,255,255,0.45)]"
+              >
+                <RotateCcw className="h-3.5 w-3.5" strokeWidth={2.2} />
+                Volver a hoy
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <main key={selectedDate} className="mx-auto max-w-lg space-y-5 px-4 pt-4">
@@ -269,6 +335,32 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
           </div>
         </RevealSection>
 
+        {isYesterday && (
+          <RevealSection
+            revealed={revealed}
+            offsetY={10}
+            delay={0.03}
+            duration={0.5}
+            className="flex flex-col items-center px-2 pt-1 text-center"
+          >
+            <p className="text-[13px] font-medium text-[#41514F]">
+              ¿Te olvidaste de agregar algo?
+              <br />
+              <span className="whitespace-nowrap">
+                ¡No hay problema! todavía estás a tiempo.
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={() => openQuickAddForSlot('lunch')}
+              className="pressable mt-2.5 inline-flex min-h-[38px] items-center gap-1.5 rounded-full bg-[#013230] px-4 py-1.5 text-[13px] font-semibold text-[#F3EBDD]"
+            >
+              <Plus className="h-3.5 w-3.5" strokeWidth={2.4} />
+              Añadir Comida
+            </button>
+          </RevealSection>
+        )}
+
         {/* Meals Breakdown (only slots with logged items) */}
         <RevealSection
           aria-label="Comidas registradas"
@@ -290,16 +382,20 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
                     Mmm... Parece que no hay comida por aquí
                   </p>
                   <p className="mt-1 text-[13px] text-[#41514F]">
-                    ¡Prueba añadiendo algo!
+                    {isBeforeYesterday
+                      ? 'No hay comidas registradas para este día'
+                      : '¡Prueba añadiendo algo!'}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => openQuickAddForSlot('breakfast')}
-                    className="pressable mt-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#013230] px-5 py-2.5 text-[14px] font-semibold text-[#F3EBDD]"
-                  >
-                    <Plus className="h-4 w-4" strokeWidth={2.4} />
-                    Registrar comida
-                  </button>
+                  {!isBeforeYesterday && (
+                    <button
+                      type="button"
+                      onClick={() => openQuickAddForSlot('breakfast')}
+                      className="pressable mt-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#013230] px-5 py-2.5 text-[14px] font-semibold text-[#F3EBDD]"
+                    >
+                      <Plus className="h-4 w-4" strokeWidth={2.4} />
+                      Registrar comida
+                    </button>
+                  )}
                 </div>
               );
             }
@@ -326,17 +422,6 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
                         </p>
                       </div>
                     </div>
-
-                    {/* Secondary Tinted Pill (reserves solid Deep Teal for hero primary action) */}
-                    <button
-                      type="button"
-                      onClick={() => openQuickAddForSlot(slot)}
-                      aria-label={`Añadir a ${meta.label}`}
-                      className="pressable-sm flex min-h-[44px] items-center gap-1 rounded-full bg-[#D7E6E3]/85 px-3.5 text-[13px] font-bold text-[#013230]"
-                    >
-                      <Plus className="h-4 w-4" strokeWidth={2.4} />
-                      Añadir
-                    </button>
                   </div>
 
                   {/* Logged Entries */}
@@ -344,12 +429,17 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
                     {items.map((entry) => (
                       <div
                         key={entry.id}
-                        className="flex items-center justify-between gap-2 py-2.5 pr-2 pl-4"
+                        className={`flex items-center justify-between gap-2 py-2.5 pl-4 ${
+                          isBeforeYesterday ? 'pr-4' : 'pr-2'
+                        }`}
                       >
                         <button
                           type="button"
-                          onClick={() => openEditEntry(entry)}
-                          className="min-h-[44px] min-w-0 flex-1 py-1 text-left"
+                          disabled={isBeforeYesterday}
+                          onClick={() => !isBeforeYesterday && openEditEntry(entry)}
+                          className={`min-h-[44px] min-w-0 flex-1 py-1 text-left ${
+                            isBeforeYesterday ? 'cursor-default' : ''
+                          }`}
                         >
                           <div className="flex items-center gap-1.5">
                             {entry.sourceType === 'dish' && (
@@ -376,14 +466,16 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
                             {entry.macros.calories}{' '}
                             <span className="text-[11px] font-medium text-[#53625F]">kcal</span>
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => setPendingDeleteEntry(entry)}
-                            aria-label={`Eliminar ${entry.name}`}
-                            className="pressable-sm flex h-11 w-11 items-center justify-center rounded-full text-[#53625F] hover:bg-[#F5E1D8] hover:text-[#B54E28]"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          {!isBeforeYesterday && (
+                            <button
+                              type="button"
+                              onClick={() => setPendingDeleteEntry(entry)}
+                              aria-label={`Eliminar ${entry.name}`}
+                              className="pressable-sm flex h-11 w-11 items-center justify-center rounded-full text-[#53625F] hover:bg-[#F5E1D8] hover:text-[#B54E28]"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -418,15 +510,21 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
       />
 
       {/* Quick Add Bottom Sheet */}
-      {quickAddOpen && (
-        <QuickAddSheet
-          open={quickAddOpen}
-          onClose={() => setQuickAddOpen(false)}
-          dateKey={selectedDate}
-          initialMealSlot={quickAddSlot}
-          onOpenDishBuilder={onOpenDishBuilder}
-        />
-      )}
+      <QuickAddSheet
+        open={quickAddOpen}
+        onClose={() => setQuickAddOpen(false)}
+        dateKey={selectedDate}
+        initialMealSlot={quickAddSlot}
+        onOpenDishBuilder={onOpenDishBuilder}
+      />
+
+      {/* Calendar Rings Modal */}
+      <CalendarModal
+        open={calendarOpen}
+        onClose={() => setCalendarOpen(false)}
+        selectedDate={selectedDate}
+        onSelectDate={(dateKey) => setSelectedDate(dateKey)}
+      />
 
       {/* Inline Entry Quantity Editor Sheet */}
       <BottomSheet
