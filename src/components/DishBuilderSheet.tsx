@@ -4,6 +4,7 @@ import { calculateDishNutrition, calculateFoodMacros } from '../domain/nutrition
 import { CustomDish, DishIngredient, FoodItem } from '../domain/types';
 import { useNutritionStore } from '../store/useNutritionStore';
 import { BottomSheet } from './BottomSheet';
+import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 
 interface DishBuilderSheetProps {
   open: boolean;
@@ -31,6 +32,10 @@ export function DishBuilderSheet({
   const [showIngredientPicker, setShowIngredientPicker] = useState(
     (editingDish?.ingredients.length ?? 0) === 0
   );
+  const [pendingRemoveIngredient, setPendingRemoveIngredient] = useState<{
+    foodId: string;
+    name: string;
+  } | null>(null);
 
   const foodMap = useMemo(() => new Map(foods.map((f) => [f.id, f])), [foods]);
 
@@ -293,7 +298,9 @@ export function DishBuilderSheet({
                       <span className="text-[12px] font-medium text-[#53625F]">g</span>
                       <button
                         type="button"
-                        onClick={() => handleRemoveIngredient(item.foodId)}
+                        onClick={() =>
+                          setPendingRemoveIngredient({ foodId: item.foodId, name: food.name })
+                        }
                         aria-label={`Quitar ${food.name}`}
                         className="pressable-sm flex h-11 w-11 items-center justify-center rounded-full text-[#53625F] hover:bg-[#F5E1D8] hover:text-[#B54E28]"
                       >
@@ -351,6 +358,22 @@ export function DishBuilderSheet({
           </div>
         )}
       </div>
+
+      <ConfirmDeleteModal
+        open={Boolean(pendingRemoveIngredient)}
+        title="¿Eliminar ingrediente?"
+        description={
+          pendingRemoveIngredient
+            ? `Se quitará «${pendingRemoveIngredient.name}» de este plato.`
+            : ''
+        }
+        onCancel={() => setPendingRemoveIngredient(null)}
+        onConfirm={() => {
+          if (!pendingRemoveIngredient) return;
+          handleRemoveIngredient(pendingRemoveIngredient.foodId);
+          setPendingRemoveIngredient(null);
+        }}
+      />
     </BottomSheet>
   );
 }

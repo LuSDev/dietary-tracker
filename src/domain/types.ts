@@ -1,6 +1,6 @@
 export type AppTab = 'today' | 'foods' | 'progress' | 'goals';
 
-export type MealSlot = 'breakfast' | 'lunch' | 'snack' | 'dinner';
+export type MealSlot = 'breakfast' | 'lunch' | 'snack' | 'dinner' | 'extra_snack';
 
 export type FoodCategory =
   | 'proteins'
@@ -9,6 +9,7 @@ export type FoodCategory =
   | 'fruits'
   | 'vegetables'
   | 'fats_nuts'
+  | 'prepared_meals'
   | 'drinks_supplements';
 
 export interface MacroNutrients {
@@ -117,6 +118,11 @@ export const MEAL_SLOT_META: Record<
     label: 'Cena',
     subtitle: 'Cierre nutricional del día',
     defaultTimeHint: '20:00 – 22:30'
+  },
+  extra_snack: {
+    label: 'Snack',
+    subtitle: 'Picoteo o comida fuera de las principales',
+    defaultTimeHint: 'Entre comidas'
   }
 };
 
@@ -130,5 +136,6 @@ export const FOOD_CATEGORY_META: Record<
   fruits: { label: 'Frutas Frescas', shortLabel: 'Frutas' },
   vegetables: { label: 'Verduras y Hortalizas', shortLabel: 'Verduras' },
   fats_nuts: { label: 'Grasas, Aceites y Semillas', shortLabel: 'Grasas/Frutos' },
+  prepared_meals: { label: 'Platos Preparados', shortLabel: 'Platos' },
   drinks_supplements: { label: 'Suplementos y Otros', shortLabel: 'Otros' }
 };

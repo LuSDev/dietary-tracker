@@ -1,4 +1,4 @@
-import { BarChart3, Flame, Plus, User, UtensilsCrossed } from 'lucide-react';
+import { BarChart3, Flame, Plus, Target, UtensilsCrossed } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AppTab } from '../domain/types';
 
@@ -23,8 +23,8 @@ const RIGHT_NAV_ITEMS: Array<{
   label: string;
   Icon: typeof Flame;
 }> = [
-  { id: 'progress', label: 'Progreso', Icon: BarChart3 },
-  { id: 'goals', label: 'Personal', Icon: User }
+  { id: 'progress', label: 'Mi Progreso', Icon: BarChart3 },
+  { id: 'goals', label: 'Mis objetivos', Icon: Target }
 ];
 
 export function FloatingPillNavbar({

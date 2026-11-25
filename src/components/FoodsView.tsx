@@ -1,8 +1,10 @@
-import { ChefHat, Edit3, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
+import { ChefHat, Edit3, Plus, ShoppingCart, Sparkles, Trash2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { calculateDishNutrition, calculateFoodMacros } from '../domain/nutritionCalculator';
 import { CustomDish, FOOD_CATEGORY_META, FoodCategory, FoodItem } from '../domain/types';
 import { useNutritionStore } from '../store/useNutritionStore';
+import { AnimatedSearchInput, buildInterleavedPlaceholders } from './AnimatedSearchInput';
+import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { CustomFoodSheet } from './CustomFoodSheet';
 import { DishBuilderSheet } from './DishBuilderSheet';
 import { QuickAddSheet } from './QuickAddSheet';
@@ -30,7 +32,17 @@ export function FoodsView() {
   const [quickLogDish, setQuickLogDish] = useState<CustomDish | null>(null);
 
   const [deletedDishUndo, setDeletedDishUndo] = useState<CustomDish | null>(null);
+  const [pendingDeleteDish, setPendingDeleteDish] = useState<CustomDish | null>(null);
   const undoTimerRef = useRef<number | null>(null);
+
+  const placeholderCandidates = useMemo(() => {
+    if (subTab === 'dishes') {
+      return dishes.length > 0
+        ? dishes.map((d) => `Buscar "${d.name}"...`)
+        : ['Buscar en tus platos o recetas...'];
+    }
+    return buildInterleavedPlaceholders(foods, 'Buscar alimentos...');
+  }, [subTab, foods, dishes]);
 
   const filteredFoods = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -92,7 +104,7 @@ export function FoodsView() {
                 className="pressable-sm flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#013230] px-4 text-[13px] font-semibold text-[#F3EBDD]"
               >
                 <Plus className="h-4 w-4" strokeWidth={2.4} />
-                Alimento
+                Nuevo Alimento
               </button>
             ) : (
               <button
@@ -114,12 +126,13 @@ export function FoodsView() {
             <button
               type="button"
               onClick={() => setSubTab('foods')}
-              className={`pressable-sm min-h-[40px] rounded-xl py-2 text-[14px] font-semibold transition-colors ${
+              className={`pressable-sm flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl py-2 text-[14px] font-semibold transition-colors ${
                 subTab === 'foods'
                   ? 'bg-[#FAF6EE] text-[#101918] shadow-sm'
                   : 'text-[#41514F]'
               }`}
             >
+              <ShoppingCart className="h-4 w-4" />
               Alimentos ({foods.length})
             </button>
             <button
@@ -137,21 +150,18 @@ export function FoodsView() {
           </div>
 
           {/* Search Input (16px) */}
-          <div className="relative mt-3">
-            <Search className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-[#53625F]" />
-            <input
-              type="search"
-              enterKeyHint="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={
-                subTab === 'foods'
-                  ? 'Buscar entre más de 135 alimentos...'
-                  : 'Buscar en tus platos o recetas...'
-              }
-              className="h-11 w-full rounded-2xl border border-[#013230]/12 bg-[#FFFDF9] pr-4 pl-10 text-[16px] text-[#101918] placeholder:text-[#53625F] focus:border-[#013230] focus:outline-none"
-            />
-          </div>
+          <AnimatedSearchInput
+            value={query}
+            onChange={setQuery}
+            placeholders={placeholderCandidates}
+            resetKey={subTab}
+            ariaLabel={
+              subTab === 'foods'
+                ? 'Buscar alimentos en el catálogo'
+                : 'Buscar en tus platos o recetas'
+            }
+            className="mt-3"
+          />
 
           {/* Category Filter Chips for Foods */}
           {subTab === 'foods' && (
@@ -308,7 +318,7 @@ export function FoodsView() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteDish(dish)}
+                        onClick={() => setPendingDeleteDish(dish)}
                         aria-label={`Eliminar ${dish.name}`}
                         className="pressable-sm flex h-11 w-11 items-center justify-center rounded-full text-[#53625F] hover:bg-[#F5E1D8] hover:text-[#B54E28]"
                       >
@@ -385,6 +395,22 @@ export function FoodsView() {
         message={deletedDishUndo ? `Plato eliminado: ${deletedDishUndo.name}` : null}
         onUndo={handleUndoDeleteDish}
         onDismiss={() => setDeletedDishUndo(null)}
+      />
+
+      <ConfirmDeleteModal
+        open={Boolean(pendingDeleteDish)}
+        title="¿Eliminar plato?"
+        description={
+          pendingDeleteDish
+            ? `Se eliminará «${pendingDeleteDish.name}» de tu lista de platos.`
+            : ''
+        }
+        onCancel={() => setPendingDeleteDish(null)}
+        onConfirm={() => {
+          if (!pendingDeleteDish) return;
+          handleDeleteDish(pendingDeleteDish);
+          setPendingDeleteDish(null);
+        }}
       />
 
       {/* Modals */}

@@ -335,7 +335,16 @@ export const useNutritionStore = create<NutritionState>()(
     }),
     {
       name: 'nura-nutrition-storage-v1',
-      version: 1
+      version: 2,
+      merge: (persistedState, currentState) => {
+        const persisted = (persistedState as Partial<NutritionState>) ?? {};
+        const customFoods = (persisted.foods ?? []).filter((f) => f.isCustom);
+        return {
+          ...currentState,
+          ...persisted,
+          foods: [...customFoods, ...INITIAL_FOOD_DATASET]
+        };
+      }
     }
   )
 );

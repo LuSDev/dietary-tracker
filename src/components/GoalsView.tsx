@@ -7,6 +7,7 @@ import {
 } from '../domain/nutritionCalculator';
 import { useNutritionStore } from '../store/useNutritionStore';
 import { BottomSheet } from './BottomSheet';
+import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { RevealSection } from './RevealSection';
 
 const MACRO_PRESETS = [
@@ -354,40 +355,29 @@ export function GoalsView() {
               Restaurar datos demo
             </button>
 
-            {!confirmClearLogs ? (
-              <button
-                type="button"
-                onClick={() => setConfirmClearLogs(true)}
-                className="pressable-sm inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#F5E1D8] px-4 py-2 text-[13px] font-semibold text-[#8B3B1E]"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Empezar diario en blanco
-              </button>
-            ) : (
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearAllLogs();
-                    setConfirmClearLogs(false);
-                    flashSaved();
-                  }}
-                  className="pressable-sm inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#B54E28] px-4 py-2 text-[13px] font-bold text-[#FFFDF9]"
-                >
-                  Confirmar borrado total
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmClearLogs(false)}
-                  className="pressable-sm inline-flex min-h-[44px] items-center rounded-full bg-[#E8DEC8] px-4 py-2 text-[13px] font-semibold text-[#101918]"
-                >
-                  Cancelar
-                </button>
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={() => setConfirmClearLogs(true)}
+              className="pressable-sm inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#F5E1D8] px-4 py-2 text-[13px] font-semibold text-[#8B3B1E]"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Empezar diario en blanco
+            </button>
           </div>
         </RevealSection>
       </main>
+
+      <ConfirmDeleteModal
+        open={confirmClearLogs}
+        title="¿Vaciar todo el diario?"
+        description="Se eliminarán todos los registros de comidas guardados en tu historial."
+        onCancel={() => setConfirmClearLogs(false)}
+        onConfirm={() => {
+          clearAllLogs();
+          setConfirmClearLogs(false);
+          flashSaved();
+        }}
+      />
 
       {/* TDEE Guided Calculator Bottom Sheet */}
       <BottomSheet

@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Coffee,
+  Cookie,
   Flame,
   Moon,
   Plus,
@@ -23,6 +24,7 @@ import { useNutritionStore } from '../store/useNutritionStore';
 import { AnimatedNumber } from './AnimatedNumber';
 import { BottomSheet } from './BottomSheet';
 import { CalorieRing } from './CalorieRing';
+import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { QuickAddSheet } from './QuickAddSheet';
 import { RevealSection } from './RevealSection';
 import { UndoToast } from './UndoToast';
@@ -36,7 +38,8 @@ const SLOT_ICONS: Record<MealSlot, typeof Coffee> = {
   breakfast: Coffee,
   lunch: Sun,
   snack: Sunset,
-  dinner: Moon
+  dinner: Moon,
+  extra_snack: Cookie
 };
 
 export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps) {
@@ -52,6 +55,7 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
   const [quickAddSlot, setQuickAddSlot] = useState<MealSlot>('lunch');
   const [editingEntry, setEditingEntry] = useState<MealLogEntry | null>(null);
   const [editValue, setEditValue] = useState<number>(100);
+  const [pendingDeleteEntry, setPendingDeleteEntry] = useState<MealLogEntry | null>(null);
 
   // Undo state for deleted log entries
   const [deletedUndo, setDeletedUndo] = useState<{
@@ -91,7 +95,8 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
       breakfast: [],
       lunch: [],
       snack: [],
-      dinner: []
+      dinner: [],
+      extra_snack: []
     };
     for (const entry of dayLog?.entries ?? []) {
       grouped[entry.mealSlot].push(entry);
@@ -264,7 +269,7 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
           </div>
         </RevealSection>
 
-        {/* Meals Breakdown */}
+        {/* Meals Breakdown (only slots with logged items) */}
         <RevealSection
           aria-label="Comidas registradas"
           revealed={revealed}
@@ -273,44 +278,68 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
           duration={0.58}
           className="space-y-3.5"
         >
-          {(Object.keys(MEAL_SLOT_META) as MealSlot[]).map((slot) => {
-            const meta = MEAL_SLOT_META[slot];
-            const items = entriesBySlot[slot];
-            const slotCalories = items.reduce((acc, i) => acc + i.macros.calories, 0);
-            const SlotIcon = SLOT_ICONS[slot];
+          {(() => {
+            const activeSlots = (Object.keys(MEAL_SLOT_META) as MealSlot[]).filter(
+              (slot) => entriesBySlot[slot].length > 0
+            );
 
-            return (
-              <div key={slot} className="surface-card overflow-hidden rounded-[24px]">
-                {/* Meal Slot Header */}
-                <div className="flex items-center justify-between gap-3 px-4 py-3.5">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E8DEC8]/75 text-[#013230]">
-                      <SlotIcon className="h-5 w-5" strokeWidth={2} />
-                    </div>
-                    <div className="min-w-0">
-                      <h2 className="text-[16px] font-bold text-[#101918]">{meta.label}</h2>
-                      <p className="tabular-nums text-[12px] font-medium text-[#41514F]">
-                        {items.length > 0
-                          ? `${slotCalories} kcal · ${items.length} ${items.length === 1 ? 'ítem' : 'ítems'}`
-                          : meta.defaultTimeHint}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Secondary Tinted Pill (reserves solid Deep Teal for hero primary action) */}
+            if (activeSlots.length === 0) {
+              return (
+                <div className="surface-card rounded-[24px] px-5 py-7 text-center">
+                  <p className="text-[15px] font-semibold text-[#101918]">
+                    Mmm... Parece que no hay comida por aquí
+                  </p>
+                  <p className="mt-1 text-[13px] text-[#41514F]">
+                    ¡Prueba añadiendo algo!
+                  </p>
                   <button
                     type="button"
-                    onClick={() => openQuickAddForSlot(slot)}
-                    aria-label={`Añadir a ${meta.label}`}
-                    className="pressable-sm flex min-h-[44px] items-center gap-1 rounded-full bg-[#D7E6E3]/85 px-3.5 text-[13px] font-bold text-[#013230]"
+                    onClick={() => openQuickAddForSlot('breakfast')}
+                    className="pressable mt-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-[#013230] px-5 py-2.5 text-[14px] font-semibold text-[#F3EBDD]"
                   >
                     <Plus className="h-4 w-4" strokeWidth={2.4} />
-                    Añadir
+                    Registrar comida
                   </button>
                 </div>
+              );
+            }
 
-                {/* Logged Entries */}
-                {items.length > 0 && (
+            return activeSlots.map((slot) => {
+              const meta = MEAL_SLOT_META[slot];
+              const items = entriesBySlot[slot];
+              const slotCalories = items.reduce((acc, i) => acc + i.macros.calories, 0);
+              const SlotIcon = SLOT_ICONS[slot];
+
+              return (
+                <div key={slot} className="surface-card overflow-hidden rounded-[24px]">
+                  {/* Meal Slot Header */}
+                  <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E8DEC8]/75 text-[#013230]">
+                        <SlotIcon className="h-5 w-5" strokeWidth={2} />
+                      </div>
+                      <div className="min-w-0">
+                        <h2 className="text-[16px] font-bold text-[#101918]">{meta.label}</h2>
+                        <p className="tabular-nums text-[12px] font-medium text-[#41514F]">
+                          {slotCalories} kcal · {items.length}{' '}
+                          {items.length === 1 ? 'ítem' : 'ítems'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Secondary Tinted Pill (reserves solid Deep Teal for hero primary action) */}
+                    <button
+                      type="button"
+                      onClick={() => openQuickAddForSlot(slot)}
+                      aria-label={`Añadir a ${meta.label}`}
+                      className="pressable-sm flex min-h-[44px] items-center gap-1 rounded-full bg-[#D7E6E3]/85 px-3.5 text-[13px] font-bold text-[#013230]"
+                    >
+                      <Plus className="h-4 w-4" strokeWidth={2.4} />
+                      Añadir
+                    </button>
+                  </div>
+
+                  {/* Logged Entries */}
                   <div className="divide-y divide-[#013230]/8 border-t border-[#013230]/8 bg-[#FFFDF9]/75">
                     {items.map((entry) => (
                       <div
@@ -349,7 +378,7 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
                           </span>
                           <button
                             type="button"
-                            onClick={() => handleRemoveEntry(entry)}
+                            onClick={() => setPendingDeleteEntry(entry)}
                             aria-label={`Eliminar ${entry.name}`}
                             className="pressable-sm flex h-11 w-11 items-center justify-center rounded-full text-[#53625F] hover:bg-[#F5E1D8] hover:text-[#B54E28]"
                           >
@@ -359,10 +388,10 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                </div>
+              );
+            });
+          })()}
         </RevealSection>
       </main>
 
@@ -370,6 +399,22 @@ export function TodayView({ onOpenDishBuilder, revealed = true }: TodayViewProps
         message={deletedUndo ? `Eliminado: ${deletedUndo.entry.name}` : null}
         onUndo={handleUndoRemove}
         onDismiss={() => setDeletedUndo(null)}
+      />
+
+      <ConfirmDeleteModal
+        open={Boolean(pendingDeleteEntry)}
+        title="¿Eliminar registro?"
+        description={
+          pendingDeleteEntry
+            ? `Se eliminará «${pendingDeleteEntry.name}» de ${MEAL_SLOT_META[pendingDeleteEntry.mealSlot].label}.`
+            : ''
+        }
+        onCancel={() => setPendingDeleteEntry(null)}
+        onConfirm={() => {
+          if (!pendingDeleteEntry) return;
+          handleRemoveEntry(pendingDeleteEntry);
+          setPendingDeleteEntry(null);
+        }}
       />
 
       {/* Quick Add Bottom Sheet */}
